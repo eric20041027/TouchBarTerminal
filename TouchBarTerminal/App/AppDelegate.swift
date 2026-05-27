@@ -30,6 +30,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             self?.toggleFocus()
         }
         
+        // 啟動 session（Phase 1 測試資料）
+        session.start()
+
         print("✅ Done launching")
     }
 

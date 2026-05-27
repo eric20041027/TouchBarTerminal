@@ -16,6 +16,10 @@ final class TerminalSession: ObservableObject {
     func start() {
         // TODO Phase 2: fork PTY
         isConnected = true
+
+        // Phase 1 測試：模擬 shell 輸出，確認 Touch Bar 能正確顯示文字
+        lastOutputLine = "/Users/smallfire"
+        promptString = "% "
     }
 
     func stop() {
