@@ -1,0 +1,37 @@
+name: TouchBarTerminal
+options:
+  bundleIdPrefix: com.eric20041027
+  deploymentTarget:
+    macOS: "13.0"
+  xcodeVersion: "15"
+  createIntermediateGroups: true
+
+settings:
+  base:
+    SWIFT_VERSION: "5.9"
+    MACOSX_DEPLOYMENT_TARGET: "13.0"
+    ARCHS: "$(ARCHS_STANDARD)"
+    CODE_SIGN_STYLE: Automatic
+
+targets:
+  TouchBarTerminal:
+    type: application
+    platform: macOS
+    sources:
+      - path: TouchBarTerminal
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.eric20041027.TouchBarTerminal
+        INFOPLIST_FILE: TouchBarTerminal/App/Info.plist
+        CODE_SIGN_ENTITLEMENTS: TouchBarTerminal/App/TouchBarTerminal.entitlements
+
+  TouchBarTerminalTests:
+    type: bundle.unit-test
+    platform: macOS
+    sources:
+      - path: TouchBarTerminalTests
+    dependencies:
+      - target: TouchBarTerminal
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.eric20041027.TouchBarTerminalTests
