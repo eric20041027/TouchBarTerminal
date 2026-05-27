@@ -1,6 +1,6 @@
 import AppKit
 
-@main
+@MainActor
 class AppDelegate: NSObject, NSApplicationDelegate {
 
     private var statusItemController: StatusItemController?
@@ -9,10 +9,11 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private var globalHotKey: GlobalHotKey?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
-        // 純 menu bar app：不顯示 Dock 圖示
+        print("🚀 App launched")
+        
         NSApp.setActivationPolicy(.accessory)
+        print("✅ Activation policy set")
 
-        // 建立核心物件
         let session = TerminalSession()
         self.terminalSession = session
 
@@ -20,16 +21,16 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         self.touchBarController = tbController
 
         self.statusItemController = StatusItemController(session: session)
+        print("✅ StatusItemController created")
 
-        // 把 Touch Bar 掛到 application 層級
         NSApp.touchBar = tbController.makeTouchBar()
+        print("✅ TouchBar assigned")
 
-        // 全域熱鍵 ⌃⌥Space
         self.globalHotKey = GlobalHotKey(keyCode: 49, modifiers: [.control, .option]) { [weak self] in
             self?.toggleFocus()
         }
-
-        // TODO Phase 2: session.start()
+        
+        print("✅ Done launching")
     }
 
     func applicationWillTerminate(_ notification: Notification) {

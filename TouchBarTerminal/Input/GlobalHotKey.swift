@@ -34,7 +34,9 @@ final class GlobalHotKey {
                 GetEventParameter(event, EventParamName(kEventParamDirectObject),
                                   EventParamType(typeEventHotKeyID), nil,
                                   MemoryLayout<EventHotKeyID>.size, nil, &hkID)
-                GlobalHotKey.handlers[hkID.id]?()
+                DispatchQueue.main.async {
+                    GlobalHotKey.handlers[hkID.id]?()
+                }
                 return noErr
             },
             1, &eventType, nil, nil

@@ -2,6 +2,7 @@ import AppKit
 import Combine
 
 /// Menu bar 狀態列圖示
+@MainActor
 final class StatusItemController {
 
     private let statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
@@ -23,7 +24,6 @@ final class StatusItemController {
                                 keyEquivalent: "q"))
         statusItem.menu = menu
     }
-
     private func bind(session: TerminalSession) {
         session.$isConnected
             .receive(on: DispatchQueue.main)

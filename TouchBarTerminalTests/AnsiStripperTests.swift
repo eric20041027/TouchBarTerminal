@@ -1,6 +1,5 @@
 import XCTest
 @testable import TouchBarTerminal
-
 final class AnsiStripperTests: XCTestCase {
 
     func test_strip_color_codes() {

@@ -2,6 +2,7 @@ import AppKit
 import Combine
 
 /// Touch Bar 視圖控制器（Phase 1 靜態骨架）
+@MainActor
 final class TouchBarController: NSObject {
 
     private weak var session: TerminalSession?
@@ -25,7 +26,7 @@ final class TouchBarController: NSObject {
     func makeTouchBar() -> NSTouchBar {
         let bar = NSTouchBar()
         bar.delegate = self
-        bar.defaultItemIdentifiers = [.outputLine, .inputLine]
+        bar.defaultItemIdentifiers = [.outputLine]
         return bar
     }
 
@@ -38,15 +39,21 @@ final class TouchBarController: NSObject {
             label.backgroundColor = .clear
             label.isBordered = false
             label.isEditable = false
-            label.translatesAutoresizingMaskIntoConstraints = false
+            label.alignment = .left  // 加這行：文字靠左
         }
         outputLabel.stringValue = "TouchBarTerminal ready"
         inputLabel.stringValue  = "% _"
 
-        outputItem.view = outputLabel
-        inputItem.view  = inputLabel
-    }
+        let stack = NSStackView(views: [outputLabel, inputLabel])
+        stack.orientation = .vertical
+        stack.spacing = 2
+        stack.distribution = .fillEqually
+        stack.alignment = .leading      // 加這行：stack 內容靠左
+        stack.widthAnchor.constraint(equalToConstant: 600).isActive = true
 
+        outputItem.view = stack
+    }
+    
     private func bindSession() {
         guard let session else { return }
 
