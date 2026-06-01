@@ -10,8 +10,6 @@
 		23210B1FD78DD29DFEE68476 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE8973F0A7820B62FBE4E9D8 /* main.swift */; };
 		41DFD13C7066EDF84DC0CA65 /* StatusItemController.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE7B0F79C6CCFD0EBE628A07 /* StatusItemController.swift */; };
 		8F3A7EBF180599046723BC9C /* TouchBarController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83980142316B07111FCBABD5 /* TouchBarController.swift */; };
-		B4E8C86E144DD735D4F1DCE2 /* AnsiStripper.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5730B204C4726407D15C312 /* AnsiStripper.swift */; };
-		B4EEC0FEC45B26958B3C72B5 /* PTYBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53BE9563996BA6128255953D /* PTYBridge.swift */; };
 		DF8FB48B9E6920F66632FA75 /* docs in Resources */ = {isa = PBXBuildFile; fileRef = 03738BE7CB3AF3D97028E75C /* docs */; };
 		E5F58EF589F2544B091571F7 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = C83FF82291171789B78E016A /* AppDelegate.swift */; };
 		F235973025E712A66FC93AAB /* TerminalSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 954484C56F6CA65A043E3AA8 /* TerminalSession.swift */; };
@@ -29,13 +27,11 @@
 
 /* Begin PBXFileReference section */
 		03738BE7CB3AF3D97028E75C /* docs */ = {isa = PBXFileReference; lastKnownFileType = folder; path = docs; sourceTree = SOURCE_ROOT; };
-		53BE9563996BA6128255953D /* PTYBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PTYBridge.swift; sourceTree = "<group>"; };
 		7F1166299CD1A128FA49CC03 /* TouchBarTerminalTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TouchBarTerminalTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		83980142316B07111FCBABD5 /* TouchBarController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TouchBarController.swift; sourceTree = "<group>"; };
 		93238C9A3F80932C038D5C8E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		954484C56F6CA65A043E3AA8 /* TerminalSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalSession.swift; sourceTree = "<group>"; };
 		99B2C72A8AEC06E77F6BA026 /* TouchBarTerminal.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = TouchBarTerminal.entitlements; sourceTree = "<group>"; };
-		A5730B204C4726407D15C312 /* AnsiStripper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnsiStripper.swift; sourceTree = "<group>"; };
 		C531BC171780BF8C5AE56627 /* TouchBarTerminal.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TouchBarTerminal.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		C83FF82291171789B78E016A /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		DE7B0F79C6CCFD0EBE628A07 /* StatusItemController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusItemController.swift; sourceTree = "<group>"; };
@@ -43,18 +39,9 @@
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
-		111174FD583668E26D75DB60 /* PTY */ = {
-			isa = PBXGroup;
-			children = (
-				53BE9563996BA6128255953D /* PTYBridge.swift */,
-			);
-			path = PTY;
-			sourceTree = "<group>";
-		};
 		2E84B908AD4F56B1551606E5 /* Session */ = {
 			isa = PBXGroup;
 			children = (
-				A5730B204C4726407D15C312 /* AnsiStripper.swift */,
 				954484C56F6CA65A043E3AA8 /* TerminalSession.swift */,
 			);
 			path = Session;
@@ -74,7 +61,6 @@
 			isa = PBXGroup;
 			children = (
 				E1841D7F64D6962CE76DB10A /* App */,
-				111174FD583668E26D75DB60 /* PTY */,
 				2E84B908AD4F56B1551606E5 /* Session */,
 				8A03102AB6739330607A848F /* UI */,
 			);
@@ -209,9 +195,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				B4E8C86E144DD735D4F1DCE2 /* AnsiStripper.swift in Sources */,
 				E5F58EF589F2544B091571F7 /* AppDelegate.swift in Sources */,
-				B4EEC0FEC45B26958B3C72B5 /* PTYBridge.swift in Sources */,
 				41DFD13C7066EDF84DC0CA65 /* StatusItemController.swift in Sources */,
 				F235973025E712A66FC93AAB /* TerminalSession.swift in Sources */,
 				8F3A7EBF180599046723BC9C /* TouchBarController.swift in Sources */,
