@@ -1,18 +1,16 @@
 import AppKit
 import Combine
 
-/// Touch Bar 視圖控制器（Phase 1 靜態骨架）
 @MainActor
 final class TouchBarController: NSObject {
 
     private weak var session: TerminalSession?
     private var cancellables = Set<AnyCancellable>()
 
-    // Touch Bar items
-    private let outputItem  = NSCustomTouchBarItem(identifier: .outputLine)
-    private let inputItem   = NSCustomTouchBarItem(identifier: .inputLine)
+    // Touch Bar item（一個格子裝兩行文字）
+    private let outputItem = NSCustomTouchBarItem(identifier: .terminalOutput)
 
-    // Views
+    // 兩行文字
     private let outputLabel = NSTextField(labelWithString: "")
     private let inputLabel  = NSTextField(labelWithString: "")
 
@@ -26,34 +24,37 @@ final class TouchBarController: NSObject {
     func makeTouchBar() -> NSTouchBar {
         let bar = NSTouchBar()
         bar.delegate = self
-        bar.defaultItemIdentifiers = [.outputLine]
+        bar.defaultItemIdentifiers = [.terminalOutput]
         return bar
     }
 
-    // MARK: - Setup
+    // MARK: - Private
 
     private func setupViews() {
+        // 設定兩個 label 的樣式
         for label in [outputLabel, inputLabel] {
-            label.font = MonoFont.default
+            label.font = NSFont(name: "SFMono-Regular", size: 11)
+                      ?? NSFont.monospacedSystemFont(ofSize: 11, weight: .regular)
             label.textColor = .white
             label.backgroundColor = .clear
             label.isBordered = false
             label.isEditable = false
-            label.alignment = .left  // 加這行：文字靠左
+            label.alignment = .left
         }
         outputLabel.stringValue = "TouchBarTerminal ready"
         inputLabel.stringValue  = "% _"
 
+        // 垂直 stack
         let stack = NSStackView(views: [outputLabel, inputLabel])
-        stack.orientation = .vertical
-        stack.spacing = 2
+        stack.orientation  = .vertical
+        stack.spacing      = 2
         stack.distribution = .fillEqually
-        stack.alignment = .leading      // 加這行：stack 內容靠左
+        stack.alignment    = .leading
         stack.widthAnchor.constraint(equalToConstant: 600).isActive = true
 
         outputItem.view = stack
     }
-    
+
     private func bindSession() {
         guard let session else { return }
 
@@ -79,15 +80,13 @@ extension TouchBarController: NSTouchBarDelegate {
     func touchBar(_ touchBar: NSTouchBar,
                   makeItemForIdentifier identifier: NSTouchBarItem.Identifier) -> NSTouchBarItem? {
         switch identifier {
-        case .outputLine: return outputItem
-        case .inputLine:  return inputItem
-        default:          return nil
+        case .terminalOutput: return outputItem
+        default: return nil
         }
     }
 }
 
-// MARK: - Identifiers
+// MARK: - Identifier
 private extension NSTouchBarItem.Identifier {
-    static let outputLine = NSTouchBarItem.Identifier("com.tbt.output")
-    static let inputLine  = NSTouchBarItem.Identifier("com.tbt.input")
+    static let terminalOutput = NSTouchBarItem.Identifier("com.tbt.output")
 }

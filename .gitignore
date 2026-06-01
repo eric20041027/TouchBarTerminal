@@ -1,18 +1,14 @@
 # Xcode
 *.xcodeproj/xcuserdata/
-*.xcodeproj/project.xcworkspace/xcuserdata/
 *.xcworkspace/xcuserdata/
-*.xcworkspace/xcshareddata/
-build/
 DerivedData/
+build/
 *.ipa
 *.dSYM.zip
 *.dSYM
 
 # macOS
 .DS_Store
-.AppleDouble
-.LSOverride
 ._*
 .Spotlight-V100
 .Trashes
@@ -20,3 +16,9 @@ DerivedData/
 # Swift Package Manager
 .build/
 .swiftpm/
+
+# codebase-memory
+.codebase-memory/
+
+# phase backup
+phase1_temp/

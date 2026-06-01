@@ -7,18 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		028CE4C8D425F69AC1A19C78 /* KeyboardInterceptor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2737A5BF399D957F14C3C900 /* KeyboardInterceptor.swift */; };
-		22FD3D6D2FC75B1D0084CF23 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22FD3D6C2FC75B1B0084CF23 /* main.swift */; };
+		23210B1FD78DD29DFEE68476 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE8973F0A7820B62FBE4E9D8 /* main.swift */; };
 		41DFD13C7066EDF84DC0CA65 /* StatusItemController.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE7B0F79C6CCFD0EBE628A07 /* StatusItemController.swift */; };
-		4BD061C420CD1299DE0E6211 /* GlobalHotKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A3F25F25A1D30CBD98A2063 /* GlobalHotKey.swift */; };
-		5960F58A49FFDA121DAB1EB4 /* CommandHistoryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D295647E4D3C71946400AA19 /* CommandHistoryTests.swift */; };
-		78F7E70FBD2309757BB9D563 /* AnsiStripperTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3B2B54D2ECBBAA010062FE2 /* AnsiStripperTests.swift */; };
 		8F3A7EBF180599046723BC9C /* TouchBarController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83980142316B07111FCBABD5 /* TouchBarController.swift */; };
-		B4E8C86E144DD735D4F1DCE2 /* AnsiStripper.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5730B204C4726407D15C312 /* AnsiStripper.swift */; };
-		B4EEC0FEC45B26958B3C72B5 /* PTYBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53BE9563996BA6128255953D /* PTYBridge.swift */; };
-		C8367EAE3E514412E3F48FB8 /* PTYBridgeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F2DE0AD97CA8158B85C90B0C /* PTYBridgeTests.swift */; };
-		CA3FE8AB3FEB7D528A478821 /* MonoFont.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D8FD1F97141427E03C6EB7A /* MonoFont.swift */; };
-		D6D577A8795403E5B3FB22CF /* CommandHistory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2568E62C339551F482C4DD80 /* CommandHistory.swift */; };
+		DF8FB48B9E6920F66632FA75 /* docs in Resources */ = {isa = PBXBuildFile; fileRef = 03738BE7CB3AF3D97028E75C /* docs */; };
 		E5F58EF589F2544B091571F7 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = C83FF82291171789B78E016A /* AppDelegate.swift */; };
 		F235973025E712A66FC93AAB /* TerminalSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 954484C56F6CA65A043E3AA8 /* TerminalSession.swift */; };
 /* End PBXBuildFile section */
@@ -34,49 +26,22 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		1D8FD1F97141427E03C6EB7A /* MonoFont.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MonoFont.swift; sourceTree = "<group>"; };
-		22FD3D6C2FC75B1B0084CF23 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
-		2568E62C339551F482C4DD80 /* CommandHistory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommandHistory.swift; sourceTree = "<group>"; };
-		2737A5BF399D957F14C3C900 /* KeyboardInterceptor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardInterceptor.swift; sourceTree = "<group>"; };
-		4A3F25F25A1D30CBD98A2063 /* GlobalHotKey.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlobalHotKey.swift; sourceTree = "<group>"; };
-		53BE9563996BA6128255953D /* PTYBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PTYBridge.swift; sourceTree = "<group>"; };
+		03738BE7CB3AF3D97028E75C /* docs */ = {isa = PBXFileReference; lastKnownFileType = folder; path = docs; sourceTree = SOURCE_ROOT; };
 		7F1166299CD1A128FA49CC03 /* TouchBarTerminalTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TouchBarTerminalTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		83980142316B07111FCBABD5 /* TouchBarController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TouchBarController.swift; sourceTree = "<group>"; };
 		93238C9A3F80932C038D5C8E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		954484C56F6CA65A043E3AA8 /* TerminalSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalSession.swift; sourceTree = "<group>"; };
 		99B2C72A8AEC06E77F6BA026 /* TouchBarTerminal.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = TouchBarTerminal.entitlements; sourceTree = "<group>"; };
-		A5730B204C4726407D15C312 /* AnsiStripper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnsiStripper.swift; sourceTree = "<group>"; };
-		C3B2B54D2ECBBAA010062FE2 /* AnsiStripperTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnsiStripperTests.swift; sourceTree = "<group>"; };
 		C531BC171780BF8C5AE56627 /* TouchBarTerminal.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TouchBarTerminal.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		C83FF82291171789B78E016A /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
-		D295647E4D3C71946400AA19 /* CommandHistoryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommandHistoryTests.swift; sourceTree = "<group>"; };
 		DE7B0F79C6CCFD0EBE628A07 /* StatusItemController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusItemController.swift; sourceTree = "<group>"; };
-		F2DE0AD97CA8158B85C90B0C /* PTYBridgeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PTYBridgeTests.swift; sourceTree = "<group>"; };
+		FE8973F0A7820B62FBE4E9D8 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
-		0458A3880A3669A24387BFF8 /* Input */ = {
-			isa = PBXGroup;
-			children = (
-				4A3F25F25A1D30CBD98A2063 /* GlobalHotKey.swift */,
-				2737A5BF399D957F14C3C900 /* KeyboardInterceptor.swift */,
-			);
-			path = Input;
-			sourceTree = "<group>";
-		};
-		111174FD583668E26D75DB60 /* PTY */ = {
-			isa = PBXGroup;
-			children = (
-				53BE9563996BA6128255953D /* PTYBridge.swift */,
-			);
-			path = PTY;
-			sourceTree = "<group>";
-		};
 		2E84B908AD4F56B1551606E5 /* Session */ = {
 			isa = PBXGroup;
 			children = (
-				A5730B204C4726407D15C312 /* AnsiStripper.swift */,
-				2568E62C339551F482C4DD80 /* CommandHistory.swift */,
 				954484C56F6CA65A043E3AA8 /* TerminalSession.swift */,
 			);
 			path = Session;
@@ -85,6 +50,7 @@
 		40218E2CD85F561AD0A7494C = {
 			isa = PBXGroup;
 			children = (
+				03738BE7CB3AF3D97028E75C /* docs */,
 				48867698F2DBAF5D40741F96 /* TouchBarTerminal */,
 				E15F7E90C27D4706519CC33B /* TouchBarTerminalTests */,
 				E3CE99FD09DA157D4B3A4C6F /* Products */,
@@ -95,8 +61,6 @@
 			isa = PBXGroup;
 			children = (
 				E1841D7F64D6962CE76DB10A /* App */,
-				0458A3880A3669A24387BFF8 /* Input */,
-				111174FD583668E26D75DB60 /* PTY */,
 				2E84B908AD4F56B1551606E5 /* Session */,
 				8A03102AB6739330607A848F /* UI */,
 			);
@@ -106,7 +70,6 @@
 		8A03102AB6739330607A848F /* UI */ = {
 			isa = PBXGroup;
 			children = (
-				1D8FD1F97141427E03C6EB7A /* MonoFont.swift */,
 				DE7B0F79C6CCFD0EBE628A07 /* StatusItemController.swift */,
 				83980142316B07111FCBABD5 /* TouchBarController.swift */,
 			);
@@ -116,9 +79,6 @@
 		E15F7E90C27D4706519CC33B /* TouchBarTerminalTests */ = {
 			isa = PBXGroup;
 			children = (
-				C3B2B54D2ECBBAA010062FE2 /* AnsiStripperTests.swift */,
-				D295647E4D3C71946400AA19 /* CommandHistoryTests.swift */,
-				F2DE0AD97CA8158B85C90B0C /* PTYBridgeTests.swift */,
 			);
 			path = TouchBarTerminalTests;
 			sourceTree = "<group>";
@@ -126,9 +86,9 @@
 		E1841D7F64D6962CE76DB10A /* App */ = {
 			isa = PBXGroup;
 			children = (
-				22FD3D6C2FC75B1B0084CF23 /* main.swift */,
 				C83FF82291171789B78E016A /* AppDelegate.swift */,
 				93238C9A3F80932C038D5C8E /* Info.plist */,
+				FE8973F0A7820B62FBE4E9D8 /* main.swift */,
 				99B2C72A8AEC06E77F6BA026 /* TouchBarTerminal.entitlements */,
 			);
 			path = App;
@@ -169,6 +129,7 @@
 			buildConfigurationList = 103623F75814C4CCD75E134A /* Build configuration list for PBXNativeTarget "TouchBarTerminal" */;
 			buildPhases = (
 				514DF49C10A53A95335E8DE1 /* Sources */,
+				A56020A8C75DCF881CC82EFB /* Resources */,
 			);
 			buildRules = (
 			);
@@ -188,7 +149,7 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = YES;
-				LastUpgradeCheck = 1500;
+				LastUpgradeCheck = 1600;
 				TargetAttributes = {
 					12A02B919FCC23C9AB125835 = {
 						ProvisioningStyle = Automatic;
@@ -218,22 +179,27 @@
 		};
 /* End PBXProject section */
 
+/* Begin PBXResourcesBuildPhase section */
+		A56020A8C75DCF881CC82EFB /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				DF8FB48B9E6920F66632FA75 /* docs in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
 /* Begin PBXSourcesBuildPhase section */
 		514DF49C10A53A95335E8DE1 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				B4E8C86E144DD735D4F1DCE2 /* AnsiStripper.swift in Sources */,
 				E5F58EF589F2544B091571F7 /* AppDelegate.swift in Sources */,
-				D6D577A8795403E5B3FB22CF /* CommandHistory.swift in Sources */,
-				4BD061C420CD1299DE0E6211 /* GlobalHotKey.swift in Sources */,
-				028CE4C8D425F69AC1A19C78 /* KeyboardInterceptor.swift in Sources */,
-				CA3FE8AB3FEB7D528A478821 /* MonoFont.swift in Sources */,
-				B4EEC0FEC45B26958B3C72B5 /* PTYBridge.swift in Sources */,
-				22FD3D6D2FC75B1D0084CF23 /* main.swift in Sources */,
 				41DFD13C7066EDF84DC0CA65 /* StatusItemController.swift in Sources */,
 				F235973025E712A66FC93AAB /* TerminalSession.swift in Sources */,
 				8F3A7EBF180599046723BC9C /* TouchBarController.swift in Sources */,
+				23210B1FD78DD29DFEE68476 /* main.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -241,9 +207,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				78F7E70FBD2309757BB9D563 /* AnsiStripperTests.swift in Sources */,
-				5960F58A49FFDA121DAB1EB4 /* CommandHistoryTests.swift in Sources */,
-				C8367EAE3E514412E3F48FB8 /* PTYBridgeTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -327,7 +290,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.eric20041027.TouchBarTerminal;
+				PRODUCT_BUNDLE_IDENTIFIER = com.smallfire.TouchBarTerminal;
 				SDKROOT = macosx;
 			};
 			name = Debug;
@@ -342,7 +305,7 @@
 					"@executable_path/../Frameworks",
 					"@loader_path/../Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.eric20041027.TouchBarTerminalTests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.smallfire.TouchBarTerminalTests;
 				SDKROOT = macosx;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/TouchBarTerminal.app/Contents/MacOS/TouchBarTerminal";
 			};
@@ -358,7 +321,7 @@
 					"@executable_path/../Frameworks",
 					"@loader_path/../Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.eric20041027.TouchBarTerminalTests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.smallfire.TouchBarTerminalTests;
 				SDKROOT = macosx;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/TouchBarTerminal.app/Contents/MacOS/TouchBarTerminal";
 			};
@@ -440,7 +403,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.eric20041027.TouchBarTerminal;
+				PRODUCT_BUNDLE_IDENTIFIER = com.smallfire.TouchBarTerminal;
 				SDKROOT = macosx;
 			};
 			name = Release;

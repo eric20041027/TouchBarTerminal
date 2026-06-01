@@ -1,7 +1,6 @@
 import AppKit
 import Combine
 
-/// Menu bar 狀態列圖示
 @MainActor
 final class StatusItemController {
 
@@ -10,21 +9,20 @@ final class StatusItemController {
 
     init(session: TerminalSession) {
         setupMenu()
-        bind(session: session)
+        bindSession(session)
     }
 
     private func setupMenu() {
         statusItem.button?.title = "⌨"
-        statusItem.button?.toolTip = "TouchBarTerminal — ⌃⌥Space to toggle"
 
         let menu = NSMenu()
         menu.addItem(NSMenuItem(title: "TouchBarTerminal", action: nil, keyEquivalent: ""))
         menu.addItem(.separator())
-        menu.addItem(NSMenuItem(title: "Quit", action: #selector(NSApplication.terminate(_:)),
-                                keyEquivalent: "q"))
+        menu.addItem(NSMenuItem(title: "Quit", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q"))
         statusItem.menu = menu
     }
-    private func bind(session: TerminalSession) {
+
+    private func bindSession(_ session: TerminalSession) {
         session.$isConnected
             .receive(on: DispatchQueue.main)
             .sink { [weak self] connected in

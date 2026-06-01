@@ -1,9 +1,9 @@
 name: TouchBarTerminal
 options:
-  bundleIdPrefix: com.eric20041027
+  bundleIdPrefix: com.smallfire
   deploymentTarget:
     macOS: "13.0"
-  xcodeVersion: "15"
+  xcodeVersion: "16"
   createIntermediateGroups: true
 
 settings:
@@ -19,9 +19,11 @@ targets:
     platform: macOS
     sources:
       - path: TouchBarTerminal
+      - path: docs
+        type: folder    # 當作資源資料夾，不編譯
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.eric20041027.TouchBarTerminal
+        PRODUCT_BUNDLE_IDENTIFIER: com.smallfire.TouchBarTerminal
         INFOPLIST_FILE: TouchBarTerminal/App/Info.plist
         CODE_SIGN_ENTITLEMENTS: TouchBarTerminal/App/TouchBarTerminal.entitlements
 
@@ -34,4 +36,4 @@ targets:
       - target: TouchBarTerminal
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.eric20041027.TouchBarTerminalTests
+        PRODUCT_BUNDLE_IDENTIFIER: com.smallfire.TouchBarTerminalTests
