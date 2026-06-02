@@ -22,4 +22,10 @@ enum AnsiStripper {
             .map { $0.trimmingCharacters(in: .whitespaces) }
             .last { !$0.isEmpty }
     }
+    /// 簡易 prompt 偵測：以 $ / % / # 結尾
+    static func isPromptLine(_ line: String) -> Bool {
+        let t = line.trimmingCharacters(in: .whitespaces)
+        return t.hasSuffix("$ ") || t.hasSuffix("% ") || t.hasSuffix("# ")
+            || t.hasSuffix("$") || t.hasSuffix("%") || t.hasSuffix("#")
+    }
 }

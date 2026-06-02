@@ -22,3 +22,4 @@ build/
 
 # phase backup
 phase1_temp/
+*.xcuserstate
