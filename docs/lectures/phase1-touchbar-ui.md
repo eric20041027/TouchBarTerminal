@@ -556,3 +556,180 @@ TerminalSession                    TouchBarController
 - `TerminalSession` 是核心，其他人都依賴它，先建立
 - `StatusItemController` 和 `TouchBarController` 都需要 `TerminalSession` 才能初始化
 - 最後才在 `AppDelegate` 把所有東西組裝起來（依賴注入）
+
+---
+
+# Phase 2 講義：PTY 橋接與真實 Shell 輸出
+
+## 概覽
+
+| 項目 | 說明 |
+|---|---|
+| 目標 | Touch Bar 顯示真實 zsh 輸出 |
+| 新增檔案 | `PTYBridge.swift`、`AnsiStripper.swift`、`CommandHistory.swift` |
+| 修改檔案 | `TerminalSession.swift` |
+| 核心技術 | `forkpty()`、`DispatchSource`、Combine callback |
+
+---
+
+## 1. PTY（Pseudo Terminal）
+
+```
+你的 App ←→ PTY master fd ←→ PTY slave fd ←→ zsh
+              （我們讀寫）                    （以為自己在真實終端）
+```
+
+**為什麼不用 subprocess？**
+- `cd`、`export` 等指令執行完狀態就消失
+- shell 看到不是終端機，不顯示 prompt、不顯示顏色
+- PTY 讓 shell 以為自己在真實終端，狀態持久保留
+
+---
+
+## 2. forkpty()
+
+```swift
+var master: Int32 = 0
+var windowSize = winsize(ws_row: 1, ws_col: 200, ws_xpixel: 0, ws_ypixel: 0)
+let pid = forkpty(&master, nil, nil, &windowSize)
+
+if pid == 0 {
+    // 子行程：執行 zsh
+    setenv("TERM", "dumb", 1)
+    var args: [UnsafeMutablePointer<CChar>?] = [strdup(shell), strdup("-l"), nil]
+    execv(shell, &args)
+    exit(1)
+}
+// 父行程：master fd 可讀寫
+self.masterFD = master
+self.childPID = pid
+```
+
+| 回傳值 | 意思 |
+|---|---|
+| `pid < 0` | fork 失敗 |
+| `pid == 0` | 現在是子行程，執行 zsh |
+| `pid > 0` | 現在是父行程，pid 是子行程的 PID |
+
+**注意**：`execl` 在 Swift 不可用（C 可變參數限制），改用 `execv`
+
+---
+
+## 3. File Descriptor (fd)
+
+整數，代表一個開啟的 I/O 通道：
+
+| fd | 用途 |
+|---|---|
+| 0 | stdin |
+| 1 | stdout |
+| 2 | stderr |
+| 3+ | 自己開的（如 masterFD） |
+
+```swift
+// 寫入（送指令給 zsh）
+Darwin.write(masterFD, ptr, byteCount)
+
+// 讀取（收 zsh 輸出）
+Darwin.read(masterFD, &buffer, bufferSize)
+```
+
+---
+
+## 4. DispatchSource — 非同步 I/O 監聽
+
+不用 while loop polling，讓系統在「有資料可讀」時通知：
+
+```swift
+let source = DispatchSource.makeReadSource(
+    fileDescriptor: masterFD,
+    queue: .global(qos: .userInitiated)
+)
+source.setEventHandler { [weak self] in
+    self?.drain()   // 有資料才進來
+}
+source.setCancelHandler { Darwin.close(masterFD) }
+source.resume()
+```
+
+Python 類比：`asyncio` event loop — 不主動等，有事件才處理
+
+---
+
+## 5. 執行緒安全設計
+
+```
+PTY 讀取  → .global(qos: .userInitiated) 背景 queue
+PTY 寫入  → 獨立序列 queue（writeQueue）
+UI 更新   → DispatchQueue.main（@MainActor）
+```
+
+```swift
+// drain() 在背景 queue 讀取
+private func drain() {
+    var buffer = [UInt8](repeating: 0, count: 4096)
+    let n = Darwin.read(masterFD, &buffer, buffer.count)
+    guard n > 0 else { return }
+    let str = String(data: Data(buffer.prefix(n)), encoding: .utf8)!
+    DispatchQueue.main.async { self.onOutput?(str) }  // 切回主執行緒
+}
+```
+
+---
+
+## 6. Callback Pattern
+
+```swift
+// PTYBridge 定義 callback
+var onOutput: ((String) -> Void)?
+
+// TerminalSession 設定 callback
+ptyBridge.onOutput = { [weak self] raw in
+    guard let self else { return }
+    if let line = AnsiStripper.lastMeaningfulLine(from: raw) {
+        self.lastOutputLine = line   // @Published，自動通知 UI
+    }
+}
+```
+
+這是「依賴反轉」：PTYBridge 不知道誰在用它，只負責回呼。
+
+---
+
+## 7. struct vs class（CommandHistory）
+
+```swift
+struct CommandHistory {        // 值型別，複製傳遞
+    mutating func push(...) {} // 修改自身需要 mutating
+}
+
+class PTYBridge {              // 參考型別，共享狀態
+    func start() {}            // 不需要 mutating
+}
+```
+
+**選擇規則**：
+- 純資料容器 → `struct`
+- 有生命週期、共享狀態、繼承需求 → `class`
+
+---
+
+## 8. ANSI Strip 正規表達式
+
+```swift
+let pattern = #"\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])"#
+```
+
+| 部分 | 匹配 |
+|---|---|
+| `\x1B` | ESC 字元 |
+| `[@-Z\\-_]` | 單字元 escape（ESC[、ESC] 等） |
+| `\[[0-?]*[ -/]*[@-~]` | CSI sequence（顏色碼、游標移動等） |
+
+---
+
+## 9. 驗收標準
+
+- [x] Console 顯示 `✅ PTY started, pid: xxxxx`
+- [x] Touch Bar 上排顯示真實 zsh prompt
+- [x] App 重啟後 session 重新建立
