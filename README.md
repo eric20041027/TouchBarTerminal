@@ -83,3 +83,125 @@ PTYBridge  →  TerminalSession  →  TouchBarController
 - [PRD.md](PRD.md) — 完整產品規格與架構設計
 - [Apple NSTouchBar Documentation](https://developer.apple.com/documentation/appkit/nstouchbar)
 - [SwiftTerm](https://github.com/migueldeicaza/SwiftTerm) — 未來版本的終端模擬器參考
+
+---
+
+## 系統架構
+
+### MVVM 架構圖
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                        App Layer                             │
+│                                                             │
+│   main.swift ──────────▶ AppDelegate                        │
+│                               │                             │
+│                    ┌──────────┼──────────┐                  │
+│                    │          │          │                   │
+│                    ▼          ▼          ▼                   │
+│            StatusItem   TouchBar    TerminalSession          │
+│            Controller   Controller  (ViewModel)              │
+│            (menu bar)   (Touch Bar)      │                   │
+│                    │          │          │                   │
+│                    └──────────┴──────────┘                   │
+│                         Combine (@Published)                 │
+└─────────────────────────────────────────────────────────────┘
+                                  │
+                    ┌─────────────▼──────────────┐
+                    │         PTYBridge           │
+                    │    (Backend / Model)        │
+                    │  forkpty() → masterFD       │
+                    │  DispatchSource (read)      │
+                    │  writeQueue (write)         │
+                    └─────────────┬──────────────┘
+                                  │
+                    ┌─────────────▼──────────────┐
+                    │        /bin/zsh             │
+                    │     (子行程 / PTY slave)    │
+                    └────────────────────────────┘
+```
+
+### 輸出流（zsh → Touch Bar）
+
+```
+zsh 產生輸出
+    │
+    ▼
+PTY slave fd
+    │
+    ▼
+masterFD (可讀)
+    │
+    ▼
+DispatchSource 觸發
+    │
+    ▼
+PTYBridge.drain()
+    │ 讀取原始 bytes
+    ▼
+String(data:encoding:)
+    │ 轉成 Swift String
+    ▼
+onOutput?(str) callback
+    │
+    ▼
+TerminalSession（@MainActor）
+    │
+    ├──▶ AnsiStripper.strip()      剝除 ANSI codes
+    ├──▶ lastMeaningfulLine()      取最後一行
+    └──▶ lastOutputLine = line     @Published 觸發
+              │
+              ▼
+         Combine sink
+              │
+              ▼
+    TouchBarController
+              │
+              ▼
+    outputLabel.stringValue        Touch Bar 上排更新
+```
+
+### 輸入流（鍵盤 → zsh）
+
+```
+使用者敲鍵盤
+    │
+    ▼
+NSEvent (keyDown)                ← Phase 3 實作
+    │
+    ▼
+KeyboardInterceptor
+    │
+    ├──▶ 一般字元 → session.appendToBuffer(char)
+    │                    │
+    │                    ▼
+    │              inputBuffer @Published
+    │                    │
+    │                    ▼
+    │           inputLabel 更新（Touch Bar 下排）
+    │
+    └──▶ Enter → session.submitInput()
+                        │
+                        ▼
+                 PTYBridge.writeString("ls\n")
+                        │
+                        ▼
+                 Darwin.write(masterFD, ...)
+                        │
+                        ▼
+                      zsh 執行
+```
+
+### 模組依賴圖
+
+```
+AppDelegate
+    ├── TerminalSession
+    │       ├── PTYBridge       → Darwin (C API)
+    │       ├── AnsiStripper
+    │       └── CommandHistory
+    ├── TouchBarController
+    │       └── TerminalSession
+    └── StatusItemController
+            └── TerminalSession
+```
