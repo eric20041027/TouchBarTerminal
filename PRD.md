@@ -214,46 +214,46 @@ TouchBarTerminal/
 
 ## 6. 開發階段(更新版,取代原文件 §4)
 
-### Phase 0 — 專案骨架 (預估 0.5 天)
+### Phase 0 — 專案骨架
 - Xcode 新建 macOS App、設定 `LSUIElement`、accessory activation policy、bundle identifier。
 - 跑得起來:啟動後 Dock 沒有圖示、menu bar 有一個佔位圖示。
 - **驗收**:啟動後只看到 menu bar 圖示,沒有視窗、沒有 Dock。
 
-### Phase 1 — Touch Bar 靜態渲染 (1 天)
+### Phase 1 — Touch Bar 靜態渲染
 - 實作 `TouchBarController`,渲染兩行假資料(上排 `hello world`、下排 `% _`)。
 - 等寬字體 + 灰底白字。
 - **驗收**:App 在前景時,Touch Bar 看到兩行靜態文字。
 
-### Phase 2 — PTY 橋接 + 單向輸出 (1.5 天)
+### Phase 2 — PTY 橋接 + 單向輸出
 - `PTYBridge` 用 `forkpty()` 起 zsh,把 stdout 收進 Swift。
 - App 啟動時自動執行 `pwd`,Touch Bar 上排顯示當前路徑。
 - 單元測試:`PTYBridgeTests` 驗證寫 `echo hi\n` 收到 `hi`。
 - **驗收**:看到真實的 shell 輸出。
 
-### Phase 3 — 鍵盤輸入 + Enter 送指令 (1.5 天)
+### Phase 3 — 鍵盤輸入 + Enter 送指令
 - `KeyboardInterceptor` 接管 keyDown(僅 App 聚焦時)。
 - 字元附加到 buffer,Backspace 刪除,Enter 送進 PTY。
 - **驗收**:點選 Touch Bar 後,鍵盤輸入 `ls`+Enter,Touch Bar 上排顯示輸出。
 
-### Phase 4 — 最小可用集 (2 天)
+### Phase 4 — 最小可用集
 - 上下方向鍵叫出歷史(環狀緩衝,容量 100)。
 - 左右方向鍵移動游標(下排顯示游標位置)。
 - `⌃C` 送 SIGINT、`Tab` 透傳給 zsh、`⌃L` 視為 clear(我們清自己 buffer 即可)。
 - ANSI escape 剝除。
 - **驗收**:跑 `cd /tmp && ls`,輸出正常;`history` 用上下鍵叫得回來。
 
-### Phase 5 — 全域熱鍵 + 焦點切換 (1 天)
+### Phase 5 — 全域熱鍵 + 焦點切換
 - `GlobalHotKey` 用 Carbon 註冊 `⌃⌥Space`。
 - 切回原 App 時 PTY 不死、buffer 不丟。
 - menu bar 圖示有「連線中 / 已斷線」狀態。
 - **驗收**:在其他 App 工作中按熱鍵,Touch Bar 變終端;再按一次,回原 App,session 連續。
 
-### Phase 6 — 收尾 (1 天)
+### Phase 6 — 收尾
 - 游標閃爍動畫、輸出捲動(若一行超過 Touch Bar 寬度,左右滾)。
 - README、設定檔(`~/.config/touchbarterminal/config.json`:熱鍵、shell、字型大小)。
 - 簽名(本地 dev cert 即可,不上架)。
 
-**總預估**:7.5 個工作天。
+
 
 ---
 
