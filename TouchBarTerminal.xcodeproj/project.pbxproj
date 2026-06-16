@@ -14,10 +14,12 @@
 		5960F58A49FFDA121DAB1EB4 /* CommandHistoryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D295647E4D3C71946400AA19 /* CommandHistoryTests.swift */; };
 		78F7E70FBD2309757BB9D563 /* AnsiStripperTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3B2B54D2ECBBAA010062FE2 /* AnsiStripperTests.swift */; };
 		8F3A7EBF180599046723BC9C /* TouchBarController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83980142316B07111FCBABD5 /* TouchBarController.swift */; };
+		A6900FEA6291461B699C6FF5 /* TerminalParserTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A4550DA6F1C7C8146CABCCC /* TerminalParserTests.swift */; };
 		B4E8C86E144DD735D4F1DCE2 /* AnsiStripper.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5730B204C4726407D15C312 /* AnsiStripper.swift */; };
 		B4EEC0FEC45B26958B3C72B5 /* PTYBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53BE9563996BA6128255953D /* PTYBridge.swift */; };
 		D6D577A8795403E5B3FB22CF /* CommandHistory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2568E62C339551F482C4DD80 /* CommandHistory.swift */; };
 		DF8FB48B9E6920F66632FA75 /* docs in Resources */ = {isa = PBXBuildFile; fileRef = 03738BE7CB3AF3D97028E75C /* docs */; };
+		E1CD9751193214DD70F49F01 /* TerminalParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57EC57C433641DF940C692A5 /* TerminalParser.swift */; };
 		E5F58EF589F2544B091571F7 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = C83FF82291171789B78E016A /* AppDelegate.swift */; };
 		F235973025E712A66FC93AAB /* TerminalSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 954484C56F6CA65A043E3AA8 /* TerminalSession.swift */; };
 /* End PBXBuildFile section */
@@ -38,6 +40,8 @@
 		2737A5BF399D957F14C3C900 /* KeyboardInterceptor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardInterceptor.swift; sourceTree = "<group>"; };
 		4A3F25F25A1D30CBD98A2063 /* GlobalHotKey.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlobalHotKey.swift; sourceTree = "<group>"; };
 		53BE9563996BA6128255953D /* PTYBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PTYBridge.swift; sourceTree = "<group>"; };
+		57EC57C433641DF940C692A5 /* TerminalParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalParser.swift; sourceTree = "<group>"; };
+		6A4550DA6F1C7C8146CABCCC /* TerminalParserTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalParserTests.swift; sourceTree = "<group>"; };
 		7F1166299CD1A128FA49CC03 /* TouchBarTerminalTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TouchBarTerminalTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		83980142316B07111FCBABD5 /* TouchBarController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TouchBarController.swift; sourceTree = "<group>"; };
 		93238C9A3F80932C038D5C8E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
@@ -75,6 +79,7 @@
 			children = (
 				A5730B204C4726407D15C312 /* AnsiStripper.swift */,
 				2568E62C339551F482C4DD80 /* CommandHistory.swift */,
+				57EC57C433641DF940C692A5 /* TerminalParser.swift */,
 				954484C56F6CA65A043E3AA8 /* TerminalSession.swift */,
 			);
 			path = Session;
@@ -116,6 +121,7 @@
 			children = (
 				C3B2B54D2ECBBAA010062FE2 /* AnsiStripperTests.swift */,
 				D295647E4D3C71946400AA19 /* CommandHistoryTests.swift */,
+				6A4550DA6F1C7C8146CABCCC /* TerminalParserTests.swift */,
 			);
 			path = TouchBarTerminalTests;
 			sourceTree = "<group>";
@@ -239,6 +245,7 @@
 				028CE4C8D425F69AC1A19C78 /* KeyboardInterceptor.swift in Sources */,
 				B4EEC0FEC45B26958B3C72B5 /* PTYBridge.swift in Sources */,
 				41DFD13C7066EDF84DC0CA65 /* StatusItemController.swift in Sources */,
+				E1CD9751193214DD70F49F01 /* TerminalParser.swift in Sources */,
 				F235973025E712A66FC93AAB /* TerminalSession.swift in Sources */,
 				8F3A7EBF180599046723BC9C /* TouchBarController.swift in Sources */,
 				23210B1FD78DD29DFEE68476 /* main.swift in Sources */,
@@ -251,6 +258,7 @@
 			files = (
 				78F7E70FBD2309757BB9D563 /* AnsiStripperTests.swift in Sources */,
 				5960F58A49FFDA121DAB1EB4 /* CommandHistoryTests.swift in Sources */,
+				A6900FEA6291461B699C6FF5 /* TerminalParserTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

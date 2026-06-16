@@ -86,12 +86,11 @@ final class TouchBarController: NSObject {
             }
             .store(in: &cancellables)
 
-        // 左側輸入行
-        session.$inputBuffer
-            .combineLatest(session.$promptString)
+        // 左側輸入行（即時模式：直接顯示 zsh echo 回來的目前行）
+        session.$currentLine
             .receive(on: DispatchQueue.main)
-            .sink { [weak self] buffer, prompt in
-                self?.inputLabel.stringValue = "\(prompt)\(buffer)_"
+            .sink { [weak self] line in
+                self?.inputLabel.stringValue = line
             }
             .store(in: &cancellables)
 

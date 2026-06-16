@@ -599,3 +599,84 @@ CODE_SIGNING_ALLOWED: NO
 - [x] ⌃C 中斷 sleep
 - [x] Tab 補全路徑（cd Desk → cd Desktop）
 - [x] 單元測試綠燈
+
+---
+
+# Phase 6 補充：即時模式重構（passthrough + TerminalParser）
+
+## 為什麼重構
+
+buffer 模式（自己存 inputBuffer，Enter 才送）無法支援 Tab 補全——因為打字時 zsh 不知道你輸入什麼。改成**即時模式**：每個字立刻送進 zsh，由 zsh 負責 echo/補全/歷史。
+
+但即時模式讓 `TerminalSession.consume` 變成大雜燴（ANSI、行緩衝、prompt 偵測、echo 過濾、顯示格式化全混在一起），改一個壞一個。於是抽出 `TerminalParser`。
+
+## 重構後職責劃分（單一職責原則）
+
+| 檔案 | 職責 | 可測試 |
+|---|---|---|
+| `PTYBridge` | PTY I/O（讀寫 bytes） | — |
+| `TerminalParser` | 解析 raw 字串 → ParserEvent | ✅ 純邏輯 |
+| `TerminalSession` | 狀態管理 + 轉發 | — |
+| `TouchBarController` | 顯示 | — |
+
+## ParserEvent（結構化事件）
+
+```swift
+enum ParserEvent: Equatable {
+    case prompt(path: String)       // prompt 行 → 解析路徑
+    case output(line: String)       // 指令輸出
+    case currentInput(text: String) // 正在輸入的內容
+}
+```
+
+解析器吐事件，Session 套事件，兩者解耦。
+
+## 關鍵 bug：Swift 把 \r\n 當成單一 Character
+
+```swift
+for char in "foo\r\nbar" {
+    // char 會是 "f","o","o","\r\n"(整個!),"b","a","r"
+    // switch char { case "\n": } 永遠匹配不到！
+}
+```
+
+Swift 的 String 以 **grapheme cluster** 迭代，`\r\n` 是單一群集。
+這就是 pwd 輸出黏在一起的真正原因。
+
+**解法**：feed 開頭先正規化
+```swift
+let normalized = AnsiStripper.strip(raw)
+    .replacingOccurrences(of: "\r\n", with: "\n")
+    .replacingOccurrences(of: "\r", with: "\n")
+```
+
+## 即時模式按鍵對應（KeyboardInterceptor）
+
+| 按鍵 | 送出 bytes | 說明 |
+|---|---|---|
+| 一般字元 | UTF-8 | 立即 echo |
+| Enter | `0x0d` (\r) | zsh 認回車 |
+| Backspace | `0x7f` (DEL) | |
+| Tab | `0x09` | zsh 自己補全 |
+| ↑ | `ESC [ A` (0x1b 0x5b 0x41) | zsh 歷史 |
+| ↓ | `ESC [ B` | |
+| ← → | `ESC [ D` / `ESC [ C` | 游標移動 |
+| ⌃C 等 | `scalar - 0x60` | a→1, c→3, l→12 |
+
+## 測試驅動：把每個 bug 變成測試
+
+8 個測試鎖死所有踩過的雷：
+- prompt 與指令黏一起（"%pwd"）
+- user@host 回顯行
+- \r\n 分行
+- ANSI 剝除
+- backspace echo
+
+改了程式跑 `xcodebuild test`，不用每次手動 ⌘R。
+
+## CLI 跑測試
+```bash
+xcodebuild test -project TouchBarTerminal.xcodeproj \
+  -scheme TouchBarTerminal -destination 'platform=macOS' \
+  -only-testing:TouchBarTerminalTests/TerminalParserTests
+```

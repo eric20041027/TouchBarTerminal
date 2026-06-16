@@ -1,47 +1,36 @@
 import Foundation
 import Combine
 
+/// 即時模式（passthrough）的 ViewModel。
+///
+/// 重構後職責單一：
+/// - 管理 @Published 顯示狀態
+/// - 把使用者輸入即時轉發給 PTY
+/// - 把 PTY 輸出交給 TerminalParser，再把產出的事件套到狀態
+///
+/// 所有「解析 zsh 輸出」的複雜邏輯都在 [TerminalParser]，這裡保持薄。
 @MainActor
 final class TerminalSession: ObservableObject {
 
-    @Published var lastOutputLine: String = ""
-    @Published var inputBuffer: String = ""
-    @Published var promptString: String = "% "
+    /// 左側下排：目前正在輸入的指令（prompt 符號後的部分）
+    @Published var currentLine: String = "% _"
+    /// 左側上排：目前路徑
+    @Published var currentPath: String = "~"
+    /// 右側：最近的輸出（最多兩行）
+    @Published var outputLines: [String] = []
+    /// menu bar 連線狀態
     @Published var isConnected: Bool = false
-    @Published var currentPath: String = "~"      // 左側顯示的路徑（從 prompt 解析）
-    @Published var outputLines: [String] = []      // 右側顯示的輸出（最多兩行）
 
-    private(set) var history = CommandHistory()
     private var ptyBridge = PTYBridge()
-    private var lastCommand: String = ""   // 剛送出的指令，用來過濾 echo
-    private var pendingEchoSkip = ""       // 還沒被 echo 完的指令殘餘，逐段比對扣掉
+    private var parser = TerminalParser()
+
+    // MARK: - Lifecycle
 
     func start() {
-        // PTY 輸出 callback
         ptyBridge.onOutput = { [weak self] raw in
             guard let self else { return }
-
-            let lines = AnsiStripper.strip(raw)
-                .components(separatedBy: .newlines)
-                .map { $0.trimmingCharacters(in: .whitespaces) }
-                .filter { !$0.isEmpty }
-
-            for line in lines {
-                if AnsiStripper.isPromptLine(line) {
-                    // prompt 行：解析路徑放到左側，不蓋掉右側輸出
-                    if let path = AnsiStripper.extractPath(from: line) {
-                        self.currentPath = path
-                    }
-                } else if self.shouldSkipAsEcho(line) {
-                    // 過濾掉 zsh echo 回來的指令本身（可能被換行切成多段）
-                    continue
-                } else {
-                    // 一般輸出行：累積到右側，最多兩行
-                    self.outputLines.append(line)
-                    if self.outputLines.count > 2 {
-                        self.outputLines.removeFirst()
-                    }
-                }
+            for event in self.parser.feed(raw) {
+                self.apply(event)
             }
         }
         ptyBridge.start()
@@ -53,47 +42,27 @@ final class TerminalSession: ObservableObject {
         isConnected = false
     }
 
-    func submitInput() {
-        guard !inputBuffer.isEmpty else { return }
-        history.push(inputBuffer)
-        lastCommand = inputBuffer   // 記住指令，過濾它的 echo
-        pendingEchoSkip = inputBuffer.replacingOccurrences(of: " ", with: "")  // 待扣除的 echo 殘餘
-        outputLines = []            // 送出新指令時清空右側舊輸出
-        ptyBridge.writeString(inputBuffer + "\n")
-        inputBuffer = ""
+    // MARK: - 輸入（即時轉發給 zsh）
+
+    func sendCharacter(_ char: Character) {
+        ptyBridge.writeString(String(char))
     }
 
-    func appendToBuffer(_ char: Character) {
-        inputBuffer.append(char)
+    func sendBytes(_ bytes: [UInt8]) {
+        ptyBridge.writeData(Data(bytes))
     }
 
-    func deleteFromBuffer() {
-        guard !inputBuffer.isEmpty else { return }
-        inputBuffer.removeLast()
-    }
+    // MARK: - 套用解析事件
 
-    func historyPrevious() {
-        if let cmd = history.previous() { inputBuffer = cmd }
-    }
-
-    func historyNext() {
-        if let cmd = history.next() { inputBuffer = cmd }
-    }
-    func sendControlChar(_ byte: UInt8) {
-        let data = Data([byte])
-        ptyBridge.writeData(data)
-    }
-
-    /// 判斷這一行是不是 zsh echo 回來的指令片段。
-    /// 指令可能被換行切成多段（如 "cd De" + "sktop"），
-    /// 這裡把每段去空白後從 pendingEchoSkip 前綴逐步扣掉。
-    private func shouldSkipAsEcho(_ line: String) -> Bool {
-        guard !pendingEchoSkip.isEmpty else { return false }
-        let stripped = line.replacingOccurrences(of: " ", with: "")
-        if pendingEchoSkip.hasPrefix(stripped) {
-            pendingEchoSkip.removeFirst(stripped.count)
-            return true
+    private func apply(_ event: ParserEvent) {
+        switch event {
+        case .prompt(let path):
+            currentPath = path
+        case .output(let line):
+            outputLines.append(line)
+            if outputLines.count > 2 { outputLines.removeFirst() }
+        case .currentInput(let text):
+            currentLine = "% " + text + "_"
         }
-        return false
     }
 }
