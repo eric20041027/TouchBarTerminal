@@ -28,7 +28,7 @@ final class PTYBridge {
 
         if pid == 0 {
             // 子行程：切到 home 再執行 zsh
-            setenv("TERM", "dumb", 1)
+            setenv("TERM", "xterm", 1)
             setenv("TERM_PROGRAM", "TouchBarTerminal", 1)
             homePath.withCString { _ = chdir($0) }
             var args: [UnsafeMutablePointer<CChar>?] = [strdup(shell), strdup("-l"), nil]

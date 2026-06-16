@@ -535,3 +535,67 @@ private func shouldSkipAsEcho(_ line: String) -> Bool {
 - [x] 在任何 App 按 ⌃⌥Space → Touch Bar 變終端
 - [x] 再按一次 → 焦點還給原 App，session 不死
 - [x] 右側不再顯示指令 echo
+
+---
+
+# Phase 4 補充：指令歷史、Ctrl+C、Tab
+
+## 功能對應
+
+| 功能 | 按鍵 | 實作位置 |
+|---|---|---|
+| 指令歷史 | ↑ / ↓ | `historyPrevious()` / `historyNext()` + `CommandHistory` 環狀緩衝 |
+| 中斷指令 | ⌃C | `sendControlChar(0x03)` 送 SIGINT |
+| 自動補全 | Tab | `sendControlChar(0x09)` 透傳給 zsh，由 zsh 自己補全 |
+
+## TERM 環境變數的關鍵抉擇
+
+| TERM 值 | 補全 | 輸出乾淨度 |
+|---|---|---|
+| `dumb` | ❌ 不支援 | 最乾淨 |
+| `xterm` | ✅ 支援 | 可接受（我們的 ANSI 剝除能處理） |
+| `xterm-256color` | ✅ 支援 | 控制碼最多，風險高 |
+
+**結論**：用 `xterm`——補全可用，輸出也不會亂掉。
+
+```swift
+setenv("TERM", "xterm", 1)  // 不是 dumb，才有 Tab 補全
+```
+
+## Tab 補全為什麼「透傳」就好
+
+我們不自己實作補全邏輯，只把 `Tab`（0x09）原封不動送進 PTY，讓 zsh 自己處理補全並把結果 echo 回來。這是 PTY 架構的優勢：複雜邏輯交給真正的 shell。
+
+## XCTest 單元測試
+
+```swift
+import XCTest
+@testable import TouchBarTerminal   // 存取內部型別
+
+final class CommandHistoryTests: XCTestCase {
+    func test_previous_returns_last_command() {
+        var history = CommandHistory()   // Arrange
+        history.push("ls")
+        history.push("pwd")
+        XCTAssertEqual(history.previous(), "pwd")  // Act + Assert
+        XCTAssertEqual(history.previous(), "ls")
+    }
+}
+```
+
+- 測試函式名必須 `test` 開頭
+- `@testable import` 才能測內部（非 public）型別
+- 跑測試：⌘U
+
+### 測試 target 的 Info.plist 問題
+測試 target 缺 Info.plist 會 code sign 失敗，在 project.yml 加：
+```yaml
+GENERATE_INFOPLIST_FILE: YES
+CODE_SIGNING_ALLOWED: NO
+```
+
+## 驗收
+- [x] ↑↓ 叫出指令歷史
+- [x] ⌃C 中斷 sleep
+- [x] Tab 補全路徑（cd Desk → cd Desktop）
+- [x] 單元測試綠燈

@@ -11,6 +11,8 @@
 		23210B1FD78DD29DFEE68476 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE8973F0A7820B62FBE4E9D8 /* main.swift */; };
 		41DFD13C7066EDF84DC0CA65 /* StatusItemController.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE7B0F79C6CCFD0EBE628A07 /* StatusItemController.swift */; };
 		4BD061C420CD1299DE0E6211 /* GlobalHotKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A3F25F25A1D30CBD98A2063 /* GlobalHotKey.swift */; };
+		5960F58A49FFDA121DAB1EB4 /* CommandHistoryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D295647E4D3C71946400AA19 /* CommandHistoryTests.swift */; };
+		78F7E70FBD2309757BB9D563 /* AnsiStripperTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3B2B54D2ECBBAA010062FE2 /* AnsiStripperTests.swift */; };
 		8F3A7EBF180599046723BC9C /* TouchBarController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83980142316B07111FCBABD5 /* TouchBarController.swift */; };
 		B4E8C86E144DD735D4F1DCE2 /* AnsiStripper.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5730B204C4726407D15C312 /* AnsiStripper.swift */; };
 		B4EEC0FEC45B26958B3C72B5 /* PTYBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53BE9563996BA6128255953D /* PTYBridge.swift */; };
@@ -42,8 +44,10 @@
 		954484C56F6CA65A043E3AA8 /* TerminalSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalSession.swift; sourceTree = "<group>"; };
 		99B2C72A8AEC06E77F6BA026 /* TouchBarTerminal.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = TouchBarTerminal.entitlements; sourceTree = "<group>"; };
 		A5730B204C4726407D15C312 /* AnsiStripper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnsiStripper.swift; sourceTree = "<group>"; };
+		C3B2B54D2ECBBAA010062FE2 /* AnsiStripperTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnsiStripperTests.swift; sourceTree = "<group>"; };
 		C531BC171780BF8C5AE56627 /* TouchBarTerminal.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TouchBarTerminal.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		C83FF82291171789B78E016A /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		D295647E4D3C71946400AA19 /* CommandHistoryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommandHistoryTests.swift; sourceTree = "<group>"; };
 		DE7B0F79C6CCFD0EBE628A07 /* StatusItemController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusItemController.swift; sourceTree = "<group>"; };
 		FE8973F0A7820B62FBE4E9D8 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -110,6 +114,8 @@
 		E15F7E90C27D4706519CC33B /* TouchBarTerminalTests */ = {
 			isa = PBXGroup;
 			children = (
+				C3B2B54D2ECBBAA010062FE2 /* AnsiStripperTests.swift */,
+				D295647E4D3C71946400AA19 /* CommandHistoryTests.swift */,
 			);
 			path = TouchBarTerminalTests;
 			sourceTree = "<group>";
@@ -243,6 +249,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				78F7E70FBD2309757BB9D563 /* AnsiStripperTests.swift in Sources */,
+				5960F58A49FFDA121DAB1EB4 /* CommandHistoryTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -335,7 +343,9 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGNING_ALLOWED = NO;
 				COMBINE_HIDPI_IMAGES = YES;
+				GENERATE_INFOPLIST_FILE = YES;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
@@ -351,7 +361,9 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGNING_ALLOWED = NO;
 				COMBINE_HIDPI_IMAGES = YES;
+				GENERATE_INFOPLIST_FILE = YES;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
