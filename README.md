@@ -68,7 +68,7 @@ PTYBridge  →  TerminalSession  →  TouchBarController
 | Phase 2 | PTY 橋接、真實 Shell 輸出 | ✅ 完成 |
 | Phase 3 | 鍵盤輸入、Enter 送指令 | ✅ 完成 |
 | Phase 4 | 指令歷史、Ctrl+C、Tab | ⏳ 待開始 |
-| Phase 5 | 全域熱鍵、焦點切換（提前） | 🔄 進行中 |
+| Phase 5 | 全域熱鍵、焦點切換（提前） | ✅ 完成 |
 | Phase 6 | 收尾、游標動畫、設定檔 | ⏳ 待開始 |
 
 ## 學習講義

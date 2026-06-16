@@ -1,4 +1,5 @@
 import AppKit
+import Carbon
 @MainActor
 class AppDelegate: NSObject, NSApplicationDelegate {
 
@@ -7,7 +8,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private var statusItemController: StatusItemController?
     private var keyboardInterceptor: KeyboardInterceptor?  
     private var touchBar: NSTouchBar?
-
+    private var globalHotKey: GlobalHotKey?
+    
     func applicationDidFinishLaunching(_ notification: Notification) {
         NSApp.setActivationPolicy(.accessory)
         print("🚀 App launched")
@@ -37,6 +39,12 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             name: NSApplication.didBecomeActiveNotification,
             object: nil
         )
+        
+        // 全域熱鍵 ⌃⌥Space（keyCode 49 = Space）
+        let ctrlOpt = UInt32(controlKey | optionKey)
+        globalHotKey = GlobalHotKey(keyCode: 49, modifiers: ctrlOpt) { [weak self] in
+            self?.toggleFocus()
+        }
     }
 
     func applicationWillTerminate(_ notification: Notification) {
@@ -44,8 +52,19 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         session?.stop()
         
     }
+    
     @objc private func appDidBecomeActive() {
         NSApp.touchBar = touchBar  // 重用同一個，不重新建立
         print("✅ App became active, Touch Bar restored")
+    }
+    
+    private func toggleFocus() {
+        if NSApp.isActive {
+            // 已經是前景 → 把焦點還給上一個 App
+            NSApp.hide(nil)
+        } else {
+            // 不是前景 → 取得焦點，Touch Bar 變終端
+            NSApp.activate(ignoringOtherApps: true)
+        }
     }
 }

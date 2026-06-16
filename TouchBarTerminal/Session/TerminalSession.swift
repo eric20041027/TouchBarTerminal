@@ -14,6 +14,7 @@ final class TerminalSession: ObservableObject {
     private(set) var history = CommandHistory()
     private var ptyBridge = PTYBridge()
     private var lastCommand: String = ""   // 剛送出的指令，用來過濾 echo
+    private var pendingEchoSkip = ""       // 還沒被 echo 完的指令殘餘，逐段比對扣掉
 
     func start() {
         // PTY 輸出 callback
@@ -31,8 +32,8 @@ final class TerminalSession: ObservableObject {
                     if let path = AnsiStripper.extractPath(from: line) {
                         self.currentPath = path
                     }
-                } else if line == self.lastCommand {
-                    // 過濾掉 zsh echo 回來的指令本身
+                } else if self.shouldSkipAsEcho(line) {
+                    // 過濾掉 zsh echo 回來的指令本身（可能被換行切成多段）
                     continue
                 } else {
                     // 一般輸出行：累積到右側，最多兩行
@@ -56,6 +57,7 @@ final class TerminalSession: ObservableObject {
         guard !inputBuffer.isEmpty else { return }
         history.push(inputBuffer)
         lastCommand = inputBuffer   // 記住指令，過濾它的 echo
+        pendingEchoSkip = inputBuffer.replacingOccurrences(of: " ", with: "")  // 待扣除的 echo 殘餘
         outputLines = []            // 送出新指令時清空右側舊輸出
         ptyBridge.writeString(inputBuffer + "\n")
         inputBuffer = ""
@@ -80,5 +82,18 @@ final class TerminalSession: ObservableObject {
     func sendControlChar(_ byte: UInt8) {
         let data = Data([byte])
         ptyBridge.writeData(data)
+    }
+
+    /// 判斷這一行是不是 zsh echo 回來的指令片段。
+    /// 指令可能被換行切成多段（如 "cd De" + "sktop"），
+    /// 這裡把每段去空白後從 pendingEchoSkip 前綴逐步扣掉。
+    private func shouldSkipAsEcho(_ line: String) -> Bool {
+        guard !pendingEchoSkip.isEmpty else { return false }
+        let stripped = line.replacingOccurrences(of: " ", with: "")
+        if pendingEchoSkip.hasPrefix(stripped) {
+            pendingEchoSkip.removeFirst(stripped.count)
+            return true
+        }
+        return false
     }
 }

@@ -464,3 +464,74 @@ private var cancellables = Set<AnyCancellable>()
 ---
 
 *最後更新：Phase 2 完成*
+
+---
+
+# Phase 5 補充：全域熱鍵
+
+## 為什麼不能用 NSEvent
+`NSEvent.addLocalMonitorForEvents` 只在自己 App 為前景時收得到。全域熱鍵需要在「別的 App 也能觸發」，所以用 Carbon `RegisterEventHotKey`（不需 Accessibility 權限）。
+
+## Carbon 全域熱鍵流程
+```
+RegisterEventHotKey(keyCode, modifiers)  → 註冊
+        ↓
+系統偵測 ⌃⌥Space
+        ↓
+InstallEventHandler 的 C callback 被呼叫
+        ↓
+DispatchQueue.main.async → toggleFocus()
+```
+
+## 關鍵技術點
+
+### 靜態字典存 callback
+Carbon callback 是舊式 C 函式指標，**不能捕捉 Swift 的 self**。用靜態字典 `[hotkeyID: callback]` 對應，callback 裡查字典執行。
+
+### @escaping
+```swift
+init(action: @escaping () -> Void)
+```
+closure 會存到字典晚點才執行，「逃出」init 生命週期，必須標 @escaping。
+
+### modifiers bitmask
+```swift
+let ctrlOpt = UInt32(controlKey | optionKey)  // OR 合併兩個修飾鍵 bit
+```
+
+### keyCode
+Space = 49。
+
+## 焦點切換
+```swift
+private func toggleFocus() {
+    if NSApp.isActive {
+        NSApp.hide(nil)                        // 還焦點給上一個 App
+    } else {
+        NSApp.activate(ignoringOtherApps: true)  // 取得焦點，Touch Bar 變終端
+    }
+}
+```
+
+LSUIElement + accessory policy → activate 時不跳視窗、不搶 Dock 動畫。
+
+## 指令 echo 過濾（多段問題）
+zsh 會把輸入指令 echo 回來，且長指令可能被換行切成多段（`cd De` + `sktop`）。
+解法：送出時記下 `pendingEchoSkip`（去空白的指令），每段輸出從前綴逐步扣掉：
+
+```swift
+private func shouldSkipAsEcho(_ line: String) -> Bool {
+    guard !pendingEchoSkip.isEmpty else { return false }
+    let stripped = line.replacingOccurrences(of: " ", with: "")
+    if pendingEchoSkip.hasPrefix(stripped) {
+        pendingEchoSkip.removeFirst(stripped.count)
+        return true
+    }
+    return false
+}
+```
+
+## 驗收
+- [x] 在任何 App 按 ⌃⌥Space → Touch Bar 變終端
+- [x] 再按一次 → 焦點還給原 App，session 不死
+- [x] 右側不再顯示指令 echo
