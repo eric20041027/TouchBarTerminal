@@ -16,6 +16,9 @@ final class PTYBridge {
         var master: Int32 = 0
         var windowSize = winsize(ws_row: 1, ws_col: 200, ws_xpixel: 0, ws_ypixel: 0)
 
+        // fork 前在父行程取得 home path，子行程繼承
+        let homePath = FileManager.default.homeDirectoryForCurrentUser.path
+
         let pid = forkpty(&master, nil, nil, &windowSize)
 
         if pid < 0 {
@@ -24,15 +27,11 @@ final class PTYBridge {
         }
 
         if pid == 0 {
-            // 子行程：執行 zsh
+            // 子行程：切到 home 再執行 zsh
             setenv("TERM", "dumb", 1)
             setenv("TERM_PROGRAM", "TouchBarTerminal", 1)
-            // execl 在 Swift 不可用，改用 execv
-            var args: [UnsafeMutablePointer<CChar>?] = [
-                strdup(shell),
-                strdup("-l"),
-                nil
-            ]
+            homePath.withCString { _ = chdir($0) }
+            var args: [UnsafeMutablePointer<CChar>?] = [strdup(shell), strdup("-l"), nil]
             execv(shell, &args)
             exit(1)
         }
@@ -87,4 +86,15 @@ final class PTYBridge {
         guard let str = String(data: data, encoding: .utf8) else { return }
         DispatchQueue.main.async { self.onOutput?(str) }
     }
+    func writeData(_ data: Data) {
+        guard masterFD >= 0 else { return }
+        writeQueue.async { [weak self] in
+            guard let self, self.masterFD >= 0 else { return }
+            data.withUnsafeBytes { buf in
+                guard let ptr = buf.baseAddress else { return }
+                _ = Darwin.write(self.masterFD, ptr, data.count)
+            }
+        }
+    }
+    
 }

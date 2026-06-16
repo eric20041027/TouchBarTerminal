@@ -28,4 +28,18 @@ enum AnsiStripper {
         return t.hasSuffix("$ ") || t.hasSuffix("% ") || t.hasSuffix("# ")
             || t.hasSuffix("$") || t.hasSuffix("%") || t.hasSuffix("#")
     }
+
+    /// 從 prompt 解析目前路徑
+    /// 例如 "(base) smallfire@pongpong-3 ~ %" → "~"
+    static func extractPath(from prompt: String) -> String? {
+        // 取結尾 % / $ / # 前面那個「非空白詞」當作路徑
+        let pattern = #"(\S+)\s+[%$#]\s*$"#
+        guard let regex = try? NSRegularExpression(pattern: pattern) else { return nil }
+        let range = NSRange(prompt.startIndex..., in: prompt)
+        guard let match = regex.firstMatch(in: prompt, range: range),
+              let r = Range(match.range(at: 1), in: prompt) else {
+            return nil
+        }
+        return String(prompt[r])
+    }
 }
