@@ -35,6 +35,36 @@ Xcode 打開後按 `⌘R` 執行。
 | `⌃C` | 中斷目前指令 |
 | `Tab` | 自動補全（由 zsh 處理） |
 
+## 設定檔
+
+首次執行會自動建立 `~/.config/touchbarterminal/config.json`：
+
+```json
+{
+  "shell" : "/bin/zsh",
+  "fontSize" : 11,
+  "cursorBlink" : true,
+  "outputLines" : 2
+}
+```
+
+| 欄位 | 說明 | 預設 |
+|---|---|---|
+| `shell` | 啟動的 shell | `/bin/zsh` |
+| `fontSize` | Touch Bar 字型大小 | `11` |
+| `cursorBlink` | 游標是否閃爍 | `true` |
+| `outputLines` | 右側顯示幾行輸出 | `2` |
+
+## 打包發佈
+
+```bash
+./scripts/build-release.sh
+```
+
+產出 `build/TouchBarTerminal.app`（Universal Binary，Intel + Apple Silicon）。
+未簽名版本第一次開啟需在「系統設定 → 隱私權與安全性」按「強制打開」。
+簽名與 notarization 步驟見 `scripts/build-release.sh` 註解。
+
 ## 已知限制
 
 - 不支援全螢幕程式（vim、htop、less）
@@ -69,7 +99,7 @@ PTYBridge  →  TerminalSession  →  TouchBarController
 | Phase 3 | 鍵盤輸入、Enter 送指令 | ✅ 完成 |
 | Phase 4 | 指令歷史、Ctrl+C、Tab | ✅ 完成 |
 | Phase 5 | 全域熱鍵、焦點切換（提前） | ✅ 完成 |
-| Phase 6 | 收尾、游標動畫、設定檔 | ⏳ 待開始 |
+| Phase 6 | 收尾、游標動畫、設定檔、sudo 密碼 | ✅ 完成 |
 
 ## 學習講義
 

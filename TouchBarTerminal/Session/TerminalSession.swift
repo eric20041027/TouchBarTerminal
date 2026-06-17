@@ -23,10 +23,22 @@ final class TerminalSession: ObservableObject {
 
     private var ptyBridge = PTYBridge()
     private var parser = TerminalParser()
+    private let config: AppConfig
 
     /// 密碼模式：zsh 不 echo，由我們自己數使用者打了幾個字
     private var inPasswordMode = false
     private var passwordDigits = 0
+
+    /// 游標閃爍
+    private var cursorTimer: Timer?
+    private var cursorVisible = true
+    /// 目前輸入內容（不含游標），閃爍時用它重組 currentLine
+    private var inputText = ""
+    private var inputPrefix = "% "
+
+    init(config: AppConfig = .load()) {
+        self.config = config
+    }
 
     // MARK: - Lifecycle
 
@@ -37,13 +49,37 @@ final class TerminalSession: ObservableObject {
                 self.apply(event)
             }
         }
-        ptyBridge.start()
+        ptyBridge.start(shell: config.shell)
         isConnected = true
+        startCursorBlink()
     }
 
     func stop() {
+        cursorTimer?.invalidate()
+        cursorTimer = nil
         ptyBridge.stop()
         isConnected = false
+    }
+
+    // MARK: - 游標閃爍
+
+    private func startCursorBlink() {
+        guard config.cursorBlink else { return }
+        cursorTimer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { [weak self] _ in
+            Task { @MainActor in self?.toggleCursor() }
+        }
+    }
+
+    private func toggleCursor() {
+        cursorVisible.toggle()
+        renderInputLine()
+    }
+
+    /// 用目前 inputText + 游標狀態重組顯示行
+    private func renderInputLine() {
+        guard !inPasswordMode else { return }
+        let cursor = (config.cursorBlink && !cursorVisible) ? " " : "_"
+        currentLine = inputPrefix + inputText + cursor
     }
 
     // MARK: - 輸入（即時轉發給 zsh）
@@ -78,14 +114,17 @@ final class TerminalSession: ObservableObject {
             currentPath = path
         case .output(let line):
             outputLines.append(line)
-            if outputLines.count > 2 { outputLines.removeFirst() }
+            while outputLines.count > config.outputLines { outputLines.removeFirst() }
         case .currentInput(let text):
-            currentLine = "% " + text + "_"
+            inputText = text
+            inputPrefix = "% "
+            cursorVisible = true
+            renderInputLine()
         case .passwordPrompt(let prompt):
             inPasswordMode = true
             passwordDigits = 0
             outputLines.append(prompt)
-            if outputLines.count > 2 { outputLines.removeFirst() }
+            while outputLines.count > config.outputLines { outputLines.removeFirst() }
             currentLine = "🔒 "
         case .passwordEnded:
             inPasswordMode = false

@@ -6,6 +6,7 @@ final class TouchBarController: NSObject {
 
     private weak var session: TerminalSession?
     private var cancellables = Set<AnyCancellable>()
+    private let fontSize: Double
 
     private let outputItem = NSCustomTouchBarItem(identifier: .terminalOutput)
 
@@ -17,8 +18,9 @@ final class TouchBarController: NSObject {
     private let outputLine1 = NSTextField(labelWithString: "")
     private let outputLine2 = NSTextField(labelWithString: "")
 
-    init(session: TerminalSession) {
+    init(session: TerminalSession, fontSize: Double = 11) {
         self.session = session
+        self.fontSize = fontSize
         super.init()
         setupViews()
         bindSession()
@@ -36,8 +38,8 @@ final class TouchBarController: NSObject {
     private func setupViews() {
         // 共用樣式
         for label in [pathLabel, inputLabel, outputLine1, outputLine2] {
-            label.font = NSFont(name: "SFMono-Regular", size: 11)
-                      ?? NSFont.monospacedSystemFont(ofSize: 11, weight: .regular)
+            label.font = NSFont(name: "SFMono-Regular", size: fontSize)
+                      ?? NSFont.monospacedSystemFont(ofSize: fontSize, weight: .regular)
             label.textColor = .white
             label.backgroundColor = .clear
             label.isBordered = false

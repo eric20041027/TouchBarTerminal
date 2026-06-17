@@ -14,10 +14,14 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         NSApp.setActivationPolicy(.accessory)
         print("🚀 App launched")
 
-        let session = TerminalSession()
+        // 載入使用者設定（不存在則建立範本）
+        let config = AppConfig.load()
+        config.writeTemplateIfMissing()
+
+        let session = TerminalSession(config: config)
         self.session = session
 
-        let tbController = TouchBarController(session: session)
+        let tbController = TouchBarController(session: session, fontSize: config.fontSize)
         self.touchBarController = tbController
 
         self.statusItemController = StatusItemController(session: session)
