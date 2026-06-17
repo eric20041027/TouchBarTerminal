@@ -24,6 +24,10 @@ final class TerminalSession: ObservableObject {
     private var ptyBridge = PTYBridge()
     private var parser = TerminalParser()
 
+    /// 密碼模式：zsh 不 echo，由我們自己數使用者打了幾個字
+    private var inPasswordMode = false
+    private var passwordDigits = 0
+
     // MARK: - Lifecycle
 
     func start() {
@@ -46,10 +50,24 @@ final class TerminalSession: ObservableObject {
 
     func sendCharacter(_ char: Character) {
         ptyBridge.writeString(String(char))
+        // 密碼模式下自己數位數（zsh 不會 echo）
+        if inPasswordMode {
+            passwordDigits += 1
+            currentLine = "🔒 " + String(repeating: "•", count: passwordDigits)
+        }
     }
 
     func sendBytes(_ bytes: [UInt8]) {
         ptyBridge.writeData(Data(bytes))
+        guard inPasswordMode else { return }
+        // 密碼模式下調整位數顯示
+        if bytes == [0x7f] {                 // Backspace
+            passwordDigits = max(0, passwordDigits - 1)
+            currentLine = "🔒 " + String(repeating: "•", count: passwordDigits)
+        } else if bytes == [0x0d] {          // Enter → 密碼送出，等結果
+            passwordDigits = 0
+            currentLine = "🔒 ..."
+        }
     }
 
     // MARK: - 套用解析事件
@@ -63,6 +81,15 @@ final class TerminalSession: ObservableObject {
             if outputLines.count > 2 { outputLines.removeFirst() }
         case .currentInput(let text):
             currentLine = "% " + text + "_"
+        case .passwordPrompt(let prompt):
+            inPasswordMode = true
+            passwordDigits = 0
+            outputLines.append(prompt)
+            if outputLines.count > 2 { outputLines.removeFirst() }
+            currentLine = "🔒 "
+        case .passwordEnded:
+            inPasswordMode = false
+            passwordDigits = 0
         }
     }
 }

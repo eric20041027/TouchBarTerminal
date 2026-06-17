@@ -9,6 +9,10 @@ enum ParserEvent: Equatable {
     case output(line: String)
     /// 目前正在輸入的行（即時更新），text 是 prompt 符號後的使用者輸入
     case currentInput(text: String)
+    /// 進入密碼輸入模式（如 sudo 的 Password:），帶出提示文字
+    case passwordPrompt(prompt: String)
+    /// 離開密碼模式（看到一般 shell prompt）
+    case passwordEnded
 }
 
 /// 純邏輯的終端輸出解析器。
@@ -26,6 +30,12 @@ struct TerminalParser {
 
     /// 累積目前這一行（已剝除 ANSI）
     private var lineBuffer = ""
+
+    /// 目前是否在密碼輸入模式
+    private(set) var inPasswordMode = false
+
+    /// 密碼提示關鍵字（不分大小寫）
+    private static let passwordKeywords = ["password", "passphrase"]
 
     /// 餵入一段 raw 資料，回傳這段觸發的所有事件（依序）。
     mutating func feed(_ raw: String) -> [ParserEvent] {
@@ -50,9 +60,29 @@ struct TerminalParser {
             }
         }
 
-        // 行還沒結束 → 即時回報目前輸入內容
+        // 行還沒結束。先看看 lineBuffer 是不是密碼提示（如 "Password:"），
+        // 因為密碼提示通常不換行、卡在 buffer 裡等輸入。
+        if !inPasswordMode, looksLikePasswordPrompt(lineBuffer) {
+            inPasswordMode = true
+            events.append(.passwordPrompt(prompt: lineBuffer.trimmingCharacters(in: .whitespaces)))
+            return events
+        }
+
+        // 密碼模式下不回報 currentInput（zsh 不 echo，位數由 Session 自己算）
+        if inPasswordMode {
+            return events
+        }
+
+        // 一般即時回報目前輸入內容
         events.append(currentInputEvent(from: lineBuffer))
         return events
+    }
+
+    /// 這段文字看起來像不像密碼提示
+    private func looksLikePasswordPrompt(_ text: String) -> Bool {
+        let lower = text.lowercased()
+        return Self.passwordKeywords.contains { lower.contains($0) }
+            && lower.contains(":")
     }
 
     // MARK: - Private
@@ -67,6 +97,11 @@ struct TerminalParser {
         // prompt + 黏住的指令/輸出：先看有沒有 prompt 標記
         if let promptRange = Self.promptSymbolRange(in: line) {
             var events: [ParserEvent] = []
+            // 看到一般 shell prompt 代表密碼輸入已結束
+            if inPasswordMode {
+                inPasswordMode = false
+                events.append(.passwordEnded)
+            }
             if let path = Self.extractPath(fromPromptPrefix: String(line[..<promptRange.upperBound])) {
                 events.append(.prompt(path: path))
             }

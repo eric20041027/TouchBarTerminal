@@ -65,4 +65,22 @@ final class TerminalParserTests: XCTestCase {
         let events = parser.feed("\u{1B}[0;32mgreen\u{1B}[0m\n")
         XCTAssertTrue(events.contains(.output(line: "green")))
     }
+
+    // 偵測 sudo 密碼提示 → passwordPrompt 事件
+    func test_detects_password_prompt() {
+        var parser = TerminalParser()
+        let events = parser.feed("Password:")
+        XCTAssertTrue(events.contains { if case .passwordPrompt = $0 { return true }; return false })
+        XCTAssertTrue(parser.inPasswordMode)
+    }
+
+    // 看到一般 prompt → 離開密碼模式
+    func test_password_ends_on_shell_prompt() {
+        var parser = TerminalParser()
+        _ = parser.feed("Password:")
+        let events = parser.feed("\nsmallfire@host ~ %\n")
+        XCTAssertTrue(events.contains(.passwordEnded))
+        XCTAssertFalse(parser.inPasswordMode)
+    }
+
 }

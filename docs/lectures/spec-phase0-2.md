@@ -680,3 +680,54 @@ xcodebuild test -project TouchBarTerminal.xcodeproj \
   -scheme TouchBarTerminal -destination 'platform=macOS' \
   -only-testing:TouchBarTerminalTests/TerminalParserTests
 ```
+
+---
+
+# Phase 6 補充：sudo 密碼輸入支援
+
+## 問題
+`sudo` 等指令要密碼時，終端會**關閉 echo**（打的字不顯示）。
+即時模式靠 zsh echo 來顯示輸入，但密碼模式 zsh 不 echo → Touch Bar 看不出有在輸入。
+
+## 解法：啟發式偵測 + 自己數位數
+
+### 1. 偵測密碼模式（TerminalParser）
+輸出含 `password` / `passphrase` 關鍵字且有 `:` → 進密碼模式
+```swift
+private func looksLikePasswordPrompt(_ text: String) -> Bool {
+    let lower = text.lowercased()
+    return Self.passwordKeywords.contains { lower.contains($0) } && lower.contains(":")
+}
+```
+密碼提示通常不換行、卡在 lineBuffer，所以在 currentInput 階段偵測。
+
+### 2. 新增事件
+```swift
+case passwordPrompt(prompt: String)  // 進入密碼模式
+case passwordEnded                   // 看到一般 shell prompt → 離開
+```
+
+### 3. 自己數位數（TerminalSession）
+密碼模式下 zsh 不 echo，所以**位數由 Session 自己算**（它知道送了幾個字）：
+```swift
+func sendCharacter(_ char: Character) {
+    ptyBridge.writeString(String(char))
+    if inPasswordMode {
+        passwordDigits += 1
+        currentLine = "🔒 " + String(repeating: "•", count: passwordDigits)
+    }
+}
+```
+- Backspace → 位數 -1
+- Enter → 位數歸零，顯示 `🔒 ...` 等結果
+- 看到 shell prompt → passwordEnded，退出
+
+## 架構優勢
+因為 Phase 6 已抽出 TerminalParser，加密碼模式很乾淨：
+偵測邏輯在 parser（可測試），顯示/數位數在 session。
+新增 2 個測試鎖死偵測與退出行為。
+
+## 驗收
+- [x] sudo 觸發 🔒 提示
+- [x] 打字顯示 🔒 •••••（隨位數增加）
+- [x] 密碼正確執行成功
