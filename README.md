@@ -34,7 +34,7 @@ Xcode 打開後按 `⌘R` 執行。
 | `↑ / ↓` | 瀏覽指令歷史 |
 | `⌃C` | 中斷目前指令 |
 | `← / →` | 移動游標 |
-| `Tab` | 路徑自動補全（本地 PathCompleter） |
+| `Tab` | 路徑自動補全（本地 PathCompleter，讀 zsh 真實 cwd） |
 | `sudo` 等 | 密碼輸入顯示 🔒 ••••• |
 
 ## 設定檔
@@ -232,7 +232,7 @@ KeyboardInterceptor（翻譯按鍵 → session 方法）
 AppDelegate
     ├── AppConfig（JSON 設定）
     ├── TerminalSession
-    │       ├── PTYBridge       → Darwin (C API)
+    │       ├── PTYBridge       → Darwin (C API) → ProcessCWD（查 zsh 真實 cwd）
     │       ├── TerminalParser  → AnsiStripper（解析輸出，純邏輯）
     │       ├── PathCompleter   → FileManager（本地 Tab 補全）
     │       └── CommandHistory  （指令歷史）

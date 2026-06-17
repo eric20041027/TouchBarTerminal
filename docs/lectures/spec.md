@@ -731,3 +731,51 @@ func sendCharacter(_ char: Character) {
 - [x] sudo 觸發 🔒 提示
 - [x] 打字顯示 🔒 •••••（隨位數增加）
 - [x] 密碼正確執行成功
+
+---
+
+# 補充：Tab 補全與「真實 cwd」
+
+## 為什麼不靠 prompt 路徑
+
+最初 PathCompleter 拿 `currentPath`（從 zsh prompt 解析的顯示路徑，如 `Desktop`、`~`）當工作目錄，但：
+- prompt 常只顯示**尾段**（`%1~` 之類設定），`Desktop` 不是絕對路徑
+- `contentsOfDirectory(atPath: "Desktop")` 在非 home 目錄找不到 → 補全失敗
+
+## 解法：proc_pidinfo 查子行程真實 cwd
+
+直接問 zsh 子行程「你現在在哪」，比解析 prompt 可靠：
+
+```swift
+enum ProcessCWD {
+    static func of(pid: pid_t) -> String? {
+        var info = proc_vnodepathinfo()
+        let size = Int32(MemoryLayout<proc_vnodepathinfo>.size)
+        let ret = proc_pidinfo(pid, PROC_PIDVNODEPATHINFO, 0, &info, size)
+        guard ret > 0 else { return nil }
+        return withUnsafePointer(to: &info.pvi_cdir.vip_path) {
+            $0.withMemoryRebound(to: CChar.self, capacity: Int(MAXPATHLEN)) {
+                String(cString: $0)
+            }
+        }
+    }
+}
+```
+
+| 概念 | 說明 |
+|---|---|
+| `proc_pidinfo` | Darwin C API，查行程資訊 |
+| `PROC_PIDVNODEPATHINFO` | 取 vnode 路徑（含 cwd `pvi_cdir`） |
+| `withMemoryRebound` | 把 C 的 char 陣列轉成 Swift String |
+
+PTYBridge 暴露 `var currentDirectory: String?`，TerminalSession 補全時優先用它，查不到才回退 prompt 路徑。
+
+## TDD 流程示範（這個 bug 的修法）
+1. **RED**：寫 `test_tilde_cwd_completes`，cwd 給 `~` → 預期補全，實際回 `none`，失敗
+2. **GREEN**：PathCompleter 展開 `~` + 新增 ProcessCWD 讀真實 cwd
+3. **驗證**：18 測試全綠 + 真機 `cd Touch`+Tab 補成 `cd TouchBarTerminal`
+
+## 測試清單（v1.0，18 個）
+- `TerminalParserTests`（11）：輸出解析、prompt 偵測、echo 過濾、密碼模式、\r\n grapheme 陷阱
+- `PathCompleterTests`（5）：唯一/多個/無/檔案/空 buffer/~ 展開
+- `ProcessCWDTests`（2）：查自身 cwd、無效 pid
