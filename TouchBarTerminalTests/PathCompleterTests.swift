@@ -54,4 +54,17 @@ final class PathCompleterTests: XCTestCase {
         let result = PathCompleter.complete("", cwd: tmpDir)
         XCTAssertEqual(result, .none)
     }
+
+    // Bug 重現：cwd 用 ~ 開頭（prompt 顯示的家目錄）時，補全要能展開
+    func test_tilde_cwd_completes() {
+        // 在真實家目錄下建一個獨特名稱的目錄，用 "~" 當 cwd
+        let home = FileManager.default.homeDirectoryForCurrentUser.path
+        let marker = "TBTtestdir-\(UUID().uuidString.prefix(8))"
+        let markerPath = home + "/" + marker
+        try? FileManager.default.createDirectory(atPath: markerPath, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(atPath: markerPath) }
+
+        let result = PathCompleter.complete("cd \(marker.prefix(10))", cwd: "~")
+        XCTAssertEqual(result, .unique(completedBuffer: "cd " + marker))
+    }
 }

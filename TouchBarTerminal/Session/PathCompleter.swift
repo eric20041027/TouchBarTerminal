@@ -16,8 +16,11 @@ enum PathCompleter {
         case none
     }
 
-    /// 對整行指令做補全，cwd 是目前工作目錄。
-    static func complete(_ buffer: String, cwd: String) -> Result {
+    /// 對整行指令做補全，cwd 是目前工作目錄（可為 ~ 開頭，會自動展開）。
+    static func complete(_ buffer: String, cwd rawCwd: String) -> Result {
+        // cwd 可能是 prompt 顯示的 "~" 或 "~/foo"，先展開成絕對路徑，
+        // 否則 contentsOfDirectory(atPath:) 找不到目錄。
+        let cwd = (rawCwd as NSString).expandingTildeInPath
         // 取最後一個 token（以空白切）
         let parts = buffer.split(separator: " ", omittingEmptySubsequences: false)
         guard let lastToken = parts.last.map(String.init), !lastToken.isEmpty else {

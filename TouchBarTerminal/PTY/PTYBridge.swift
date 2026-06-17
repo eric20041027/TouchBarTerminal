@@ -54,6 +54,11 @@ final class PTYBridge {
 
     // MARK: - Write
 
+    /// zsh 子行程目前的工作目錄（查不到回 nil）
+    var currentDirectory: String? {
+        ProcessCWD.of(pid: childPID)
+    }
+
     func writeString(_ string: String) {
         guard let data = string.data(using: .utf8) else { return }
         writeQueue.async { [weak self] in

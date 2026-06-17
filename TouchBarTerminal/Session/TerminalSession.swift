@@ -141,7 +141,9 @@ final class TerminalSession: ObservableObject {
     /// 唯一結果 → 補進 buffer；多個 → 候選顯示在右側。
     func requestCompletion() {
         guard !inPasswordMode else { return }
-        let cwd = (currentPath as NSString).expandingTildeInPath
+        // 優先用 zsh 子行程的真實 cwd（可靠）；查不到才回退用 prompt 顯示路徑
+        let cwd = ptyBridge.currentDirectory
+            ?? (currentPath as NSString).expandingTildeInPath
         switch PathCompleter.complete(inputBuffer, cwd: cwd) {
         case .unique(let completed):
             inputBuffer = completed
