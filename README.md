@@ -33,7 +33,9 @@ Xcode 打開後按 `⌘R` 執行。
 | `Enter` | 送出指令 |
 | `↑ / ↓` | 瀏覽指令歷史 |
 | `⌃C` | 中斷目前指令 |
-| `Tab` | 自動補全（由 zsh 處理） |
+| `← / →` | 移動游標 |
+| `Tab` | 路徑自動補全（本地 PathCompleter） |
+| `sudo` 等 | 密碼輸入顯示 🔒 ••••• |
 
 ## 設定檔
 
@@ -88,19 +90,25 @@ notarization，讓使用者免繞過 Gatekeeper。步驟見 `scripts/build-relea
 
 ```
 TouchBarTerminal/
-├── App/          # 入口點、AppDelegate
+├── App/          # 入口點、AppDelegate、AppConfig（JSON 設定）
 ├── UI/           # Touch Bar UI、Menu Bar 圖示
-├── Session/      # ViewModel（TerminalSession）
-├── PTY/          # Shell 行程管理（PTYBridge）
-└── Input/        # 鍵盤攔截、全域熱鍵
+├── Session/      # TerminalSession、TerminalParser、PathCompleter、CommandHistory、AnsiStripper
+├── PTY/          # PTYBridge（forkpty + DispatchSource）
+└── Input/        # KeyboardInterceptor、GlobalHotKey
 ```
 
-### 架構模式：MVVM
+### 架構模式：MVVM + 混合輸入模式
 
 ```
-PTYBridge  →  TerminalSession  →  TouchBarController
-（Shell）      （ViewModel）        （Touch Bar UI）
+PTYBridge  →  TerminalParser  →  TerminalSession  →  TouchBarController
+（PTY I/O）   （解析輸出，純邏輯）  （ViewModel）        （Touch Bar UI）
+                                      ↑
+                              PathCompleter（本地 Tab 補全）
 ```
+
+**混合輸入模式**：正常輸入（打字、←→、↑↓、Backspace）用本地 `inputBuffer`，
+完全可控、游標不亂；只有 sudo 密碼輸入即時轉發給 zsh。Tab 用本地 `PathCompleter`，
+不依賴 zsh 互動行（避免雙向同步的累加問題）。
 
 ## 開發進度
 
@@ -120,6 +128,8 @@ PTYBridge  →  TerminalSession  →  TouchBarController
 
 - [Phase 0：環境建置](docs/lectures/phase0-environment.md)
 - [Phase 1：Touch Bar UI](docs/lectures/phase1-touchbar-ui.md)
+- [Phase 2：PTY 橋接](docs/lectures/phase2-pty-bridge.md)
+- [完整技術 Spec（Phase 0–6）](docs/lectures/spec.md) — 含混合輸入模式、sudo 密碼、重構
 
 ## 參考資料
 
@@ -145,11 +155,13 @@ PTYBridge  →  TerminalSession  →  TouchBarController
      ├──▶ [ TouchBarController ]     Touch Bar UI
      │          └── 訂閱 TerminalSession
      │
-     └──▶ [ TerminalSession ]        ViewModel (狀態中心)
+     └──▶ [ TerminalSession ]        ViewModel (狀態 + 輸入 buffer)
                │  @Published / Combine
+               ├── [ TerminalParser ]   解析 zsh 輸出 → ParserEvent（純邏輯）
+               ├── [ PathCompleter ]    本地 Tab 補全（FileManager）
+               ├── [ CommandHistory ]   指令歷史
                ▼
-          [ PTYBridge ]              Backend
-               │  forkpty() / Darwin read+write
+          [ PTYBridge ]              forkpty() / Darwin read+write
                ▼
           [ /bin/zsh ]               子行程 (PTY slave)
 ```
@@ -178,61 +190,52 @@ String(data:encoding:)
 onOutput?(str) callback
     │
     ▼
-TerminalSession（@MainActor）
+TerminalParser.feed(raw)（純邏輯）
+    │ 剝除 ANSI、處理 \r\n、偵測 prompt / 密碼模式
+    ▼
+[ParserEvent]  .prompt(path) / .output(line) / .passwordPrompt ...
     │
-    ├──▶ AnsiStripper.strip()      剝除 ANSI codes
-    ├──▶ lastMeaningfulLine()      取最後一行
-    └──▶ lastOutputLine = line     @Published 觸發
-              │
-              ▼
-         Combine sink
-              │
-              ▼
-    TouchBarController
-              │
-              ▼
-    outputLabel.stringValue        Touch Bar 上排更新
+    ▼
+TerminalSession.apply(event)（@MainActor）
+    │ 套到 @Published：currentPath / outputLines
+    ▼
+Combine sink → TouchBarController → Touch Bar 更新
 ```
 
-### 輸入流（鍵盤 → zsh）
+### 輸入流（鍵盤 → 混合模式）
 
 ```
 使用者敲鍵盤
     │
     ▼
-NSEvent (keyDown)                ← Phase 3 實作
+NSEvent (keyDown)
     │
     ▼
-KeyboardInterceptor
+KeyboardInterceptor（翻譯按鍵 → session 方法）
     │
-    ├──▶ 一般字元 → session.appendToBuffer(char)
-    │                    │
-    │                    ▼
-    │              inputBuffer @Published
-    │                    │
-    │                    ▼
-    │           inputLabel 更新（Touch Bar 下排）
+    ├──▶ 一般字元 / ←→ / ↑↓ / Backspace
+    │         └── 操作本地 inputBuffer（不送 zsh，游標完全可控）
+    │             └── renderInputLine() → currentLine（Touch Bar 下排）
     │
-    └──▶ Enter → session.submitInput()
-                        │
-                        ▼
-                 PTYBridge.writeString("ls\n")
-                        │
-                        ▼
-                 Darwin.write(masterFD, ...)
-                        │
-                        ▼
-                      zsh 執行
+    ├──▶ Tab → PathCompleter.complete()（本地 FileManager）
+    │             ├── 唯一結果 → 補進 buffer
+    │             └── 多個候選 → 顯示在右側
+    │
+    ├──▶ Enter → 送 buffer + \n 給 zsh，推進 CommandHistory
+    │
+    └──▶ sudo 密碼模式 → 即時轉發 zsh，自己數位數顯示 🔒 •••••
 ```
 
 ### 模組依賴圖
 
 ```
 AppDelegate
+    ├── AppConfig（JSON 設定）
     ├── TerminalSession
     │       ├── PTYBridge       → Darwin (C API)
-    │       ├── AnsiStripper
-    │       └── CommandHistory
+    │       ├── TerminalParser  → AnsiStripper（解析輸出，純邏輯）
+    │       ├── PathCompleter   → FileManager（本地 Tab 補全）
+    │       └── CommandHistory  （指令歷史）
     ├── TouchBarController
     │       └── TerminalSession
     └── StatusItemController

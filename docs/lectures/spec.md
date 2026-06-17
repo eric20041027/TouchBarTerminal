@@ -1,4 +1,4 @@
-# TouchBarTerminal 開發 Spec — Phase 0 to Phase 2
+# TouchBarTerminal 開發 Spec（Phase 0–6 完整版）
 
 > 這份文件是給自己回顧用的完整技術說明。
 > 每個概念都對應到實際的程式碼，讀完應該能清楚說出「為什麼這樣寫」。

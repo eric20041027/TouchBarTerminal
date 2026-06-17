@@ -181,33 +181,36 @@ class PTYBridge {
 
 ```
 TouchBarTerminal/
-├── TouchBarTerminal.xcodeproj
+├── TouchBarTerminal.xcodeproj      # XcodeGen 從 project.yml 產生
+├── project.yml                     # XcodeGen 設定
+├── scripts/
+│   └── build-release.sh            # Universal Binary 打包 + ad-hoc 簽名
 ├── TouchBarTerminal/
 │   ├── App/
-│   │   ├── AppDelegate.swift
-│   │   ├── Info.plist                  # LSUIElement=YES
+│   │   ├── main.swift              # 入口點
+│   │   ├── AppDelegate.swift       # 串接所有模組、全域熱鍵
+│   │   ├── AppConfig.swift         # JSON 設定載入
+│   │   ├── Info.plist              # LSUIElement=YES
 │   │   └── TouchBarTerminal.entitlements
 │   ├── Session/
-│   │   ├── TerminalSession.swift       # ViewModel
-│   │   ├── CommandHistory.swift        # 環狀緩衝
-│   │   └── AnsiStripper.swift
+│   │   ├── TerminalSession.swift   # ViewModel + 輸入 buffer 管理
+│   │   ├── TerminalParser.swift    # 解析 zsh 輸出 → ParserEvent（純邏輯）
+│   │   ├── PathCompleter.swift     # 本地 Tab 補全（FileManager）
+│   │   ├── CommandHistory.swift    # 指令歷史環狀緩衝
+│   │   └── AnsiStripper.swift      # ANSI escape 剝除
 │   ├── PTY/
-│   │   ├── PTYBridge.swift
-│   │   └── forkpty_shim.h              # 必要時 bridging
+│   │   └── PTYBridge.swift         # forkpty + DispatchSource
 │   ├── Input/
-│   │   ├── KeyboardInterceptor.swift
-│   │   └── GlobalHotKey.swift          # Carbon wrapper
-│   ├── UI/
-│   │   ├── TouchBarController.swift
-│   │   ├── StatusItemController.swift  # menu bar 圖示
-│   │   └── MonoFont.swift              # SF Mono 載入
-│   └── Resources/
-│       └── Assets.xcassets
+│   │   ├── KeyboardInterceptor.swift  # 按鍵 → session 方法
+│   │   └── GlobalHotKey.swift         # Carbon 全域熱鍵
+│   └── UI/
+│       ├── TouchBarController.swift   # Touch Bar UI（左右兩欄）
+│       └── StatusItemController.swift # menu bar 圖示
 └── TouchBarTerminalTests/
-    ├── PTYBridgeTests.swift
+    ├── TerminalParserTests.swift   # 11 個案例
+    ├── PathCompleterTests.swift    # 5 個案例
     ├── CommandHistoryTests.swift
-    ├── AnsiStripperTests.swift
-    └── TerminalSessionTests.swift
+    └── AnsiStripperTests.swift
 ```
 
 ---
