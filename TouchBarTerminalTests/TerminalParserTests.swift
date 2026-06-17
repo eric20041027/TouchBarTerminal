@@ -83,4 +83,12 @@ final class TerminalParserTests: XCTestCase {
         XCTAssertFalse(parser.inPasswordMode)
     }
 
+
+    // Bug 修復：cd 後新 prompt 不換行（卡 buffer）也要即時解析路徑
+    func test_prompt_without_newline_extracts_path() {
+        var parser = TerminalParser()
+        let events = parser.feed("smallfire@pongpong-3 Desktop % ")
+        XCTAssertTrue(events.contains(.prompt(path: "Desktop")))
+    }
+
 }

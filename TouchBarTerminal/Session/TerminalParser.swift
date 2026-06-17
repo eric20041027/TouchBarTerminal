@@ -40,10 +40,17 @@ struct TerminalParser {
     /// 餵入一段 raw 資料，回傳這段觸發的所有事件（依序）。
     mutating func feed(_ raw: String) -> [ParserEvent] {
         var events: [ParserEvent] = []
+        // 「清除到行尾」控制碼 ESC[K / ESC[0K：zsh 用它在重繪目前行（如 ↑ 叫歷史）時
+        // 抹掉游標後的殘留。strip 會把它整個剝掉而忽略其語意，導致舊指令疊加在新指令上。
+        // 解法：在剝 ANSI 前，把它轉成私有標記 \u{0001}，逐字元處理時截斷 lineBuffer。
+        let marked = raw
+            .replacingOccurrences(of: "\u{1B}[K", with: "\u{01}")
+            .replacingOccurrences(of: "\u{1B}[0K", with: "\u{01}")
+
         // 先把 \r\n 與 \r 正規化成 \n。
         // 注意：Swift 會把 "\r\n" 視為單一 Character（grapheme cluster），
         // 逐字元 switch 無法匹配單獨的 \n/\r，所以必須先正規化成統一的 \n。
-        let normalized = AnsiStripper.strip(raw)
+        let normalized = AnsiStripper.strip(marked)
             .replacingOccurrences(of: "\r\n", with: "\n")
             .replacingOccurrences(of: "\r", with: "\n")
 
@@ -55,6 +62,11 @@ struct TerminalParser {
             case "\u{7f}", "\u{08}":
                 // Backspace / Delete echo
                 if !lineBuffer.isEmpty { lineBuffer.removeLast() }
+            case "\u{01}":
+                // ESC[K（清除到行尾）標記：zsh 重繪目前行時抹掉游標後殘留。
+                // 即時輸入情境游標在行尾，等同把目前累積的「行尾雜訊」清掉，無動作即可；
+                // 真正的字元刪除已由前面的 \u{08} 完成。
+                break
             default:
                 lineBuffer.append(char)
             }
@@ -71,6 +83,14 @@ struct TerminalParser {
         // 密碼模式下不回報 currentInput（zsh 不 echo，位數由 Session 自己算）
         if inPasswordMode {
             return events
+        }
+
+        // prompt 行常常不換行（卡在 buffer 等輸入），所以這裡也要解析路徑，
+        // 否則 cd 之後新 prompt 的路徑不會即時更新到左上。
+        if let promptRange = Self.promptSymbolRange(in: lineBuffer),
+           isPromptLine(lineBuffer),
+           let path = Self.extractPath(fromPromptPrefix: String(lineBuffer[..<promptRange.upperBound])) {
+            events.append(.prompt(path: path))
         }
 
         // 一般即時回報目前輸入內容

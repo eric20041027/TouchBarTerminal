@@ -30,3 +30,4 @@ final class CommandHistoryTests: XCTestCase {
         XCTAssertEqual(history.count, 1)
     }
 }
+

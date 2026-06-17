@@ -1,6 +1,7 @@
 import AppKit
 
-/// 即時模式：把按鍵原封不動轉發給 zsh，由 zsh 處理 echo/補全/歷史。
+/// 把按鍵翻譯成 TerminalSession 的 buffer 操作（混合模式）。
+/// 正常輸入走 buffer，Tab/密碼由 session 內部決定是否即時轉發。
 final class KeyboardInterceptor {
 
     private weak var session: TerminalSession?
@@ -28,49 +29,31 @@ final class KeyboardInterceptor {
     private func handle(event: NSEvent, session: TerminalSession) -> NSEvent? {
         let flags = event.modifierFlags
 
-        // Control 組合鍵：送對應的控制字元（⌃C=0x03, ⌃D=0x04, ⌃L=0x0C ...）
+        // Control 組合鍵：送對應控制字元（⌃C=0x03 等）
         if flags.contains(.control),
            let chars = event.charactersIgnoringModifiers,
            let scalar = chars.unicodeScalars.first,
            scalar.value >= 0x61 && scalar.value <= 0x7a {        // a–z
-            let ctrlByte = UInt8(scalar.value - 0x60)            // a→1, c→3, l→12
-            session.sendBytes([ctrlByte])
+            session.sendControl(UInt8(scalar.value - 0x60))
             return nil
         }
 
         switch event.keyCode {
-        case 36:  // Enter → 送 \r（zsh 認回車）
-            session.sendBytes([0x0d])
-            return nil
-        case 51:  // Backspace → 送 DEL (0x7f)
-            session.sendBytes([0x7f])
-            return nil
-        case 48:  // Tab → 送 \t，zsh 自己補全
-            session.sendBytes([0x09])
-            return nil
-        case 126: // ↑ → ESC [ A
-            session.sendBytes([0x1b, 0x5b, 0x41])
-            return nil
-        case 125: // ↓ → ESC [ B
-            session.sendBytes([0x1b, 0x5b, 0x42])
-            return nil
-        case 124: // → ESC [ C
-            session.sendBytes([0x1b, 0x5b, 0x43])
-            return nil
-        case 123: // ← ESC [ D
-            session.sendBytes([0x1b, 0x5b, 0x44])
-            return nil
-        default:
-            break
+        case 36:  session.submit();            return nil   // Enter
+        case 51:  session.backspace();         return nil   // Backspace
+        case 48:  session.requestCompletion(); return nil   // Tab
+        case 126: session.historyUp();         return nil   // ↑
+        case 125: session.historyDown();       return nil   // ↓
+        case 123: session.moveCursorLeft();    return nil   // ←
+        case 124: session.moveCursorRight();   return nil   // →
+        default:  break
         }
 
-        // 一般可列印字元：即時送進 zsh（排除 Cmd 組合鍵）
+        // 一般可列印字元
         if let chars = event.characters,
            !flags.contains(.command),
            !flags.contains(.control) {
-            for char in chars {
-                session.sendCharacter(char)
-            }
+            for char in chars { session.typeCharacter(char) }
             return nil
         }
 
