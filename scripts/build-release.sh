@@ -39,6 +39,12 @@ mkdir -p build
 rm -rf build/TouchBarTerminal.app
 cp -R "$APP_PATH" build/TouchBarTerminal.app
 
+# ad-hoc 簽名（免費 Apple ID 適用，不需 Developer Program）
+# "-" 代表 ad-hoc 身分；本機可直接執行，別人下載需右鍵→打開繞過 Gatekeeper。
+echo "🔏 ad-hoc 簽名..."
+codesign --force --deep --sign - build/TouchBarTerminal.app
+echo "   驗證：$(codesign -dv build/TouchBarTerminal.app 2>&1 | grep -E 'Signature|Identifier' | tr '\n' ' ')"
+
 echo "✅ 完成：build/TouchBarTerminal.app"
 echo "   架構：$(lipo -archs build/TouchBarTerminal.app/Contents/MacOS/TouchBarTerminal 2>/dev/null || echo '未知')"
 echo ""

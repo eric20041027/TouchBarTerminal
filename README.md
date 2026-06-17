@@ -61,9 +61,22 @@ Xcode 打開後按 `⌘R` 執行。
 ./scripts/build-release.sh
 ```
 
-產出 `build/TouchBarTerminal.app`（Universal Binary，Intel + Apple Silicon）。
-未簽名版本第一次開啟需在「系統設定 → 隱私權與安全性」按「強制打開」。
-簽名與 notarization 步驟見 `scripts/build-release.sh` 註解。
+產出 `build/TouchBarTerminal.app`（Universal Binary，Intel + Apple Silicon），
+並以 **ad-hoc 簽名**（免費 Apple ID，不需付費 Developer Program）。
+
+### 別人下載後第一次開啟
+
+ad-hoc 簽名未經 Apple notarization，Gatekeeper 會擋。第一次開啟：
+
+1. 在 Finder **右鍵點 `TouchBarTerminal.app` → 打開**
+2. 跳出警告時按「打開」（之後就能正常雙擊）
+
+或在終端執行 `xattr -dr com.apple.quarantine TouchBarTerminal.app` 移除隔離屬性。
+
+### 完整 notarization（需付費 Developer Program）
+
+若加入 Apple Developer Program（$99/年），可用 Developer ID 憑證簽名 +
+notarization，讓使用者免繞過 Gatekeeper。步驟見 `scripts/build-release.sh` 註解。
 
 ## 已知限制
 
