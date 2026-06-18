@@ -19,9 +19,11 @@
 		7B3E90DCB962394098CF9677 /* AppConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73169BBADF041E6617B6AAD0 /* AppConfig.swift */; };
 		7F3BBE8E229B59486A7765FC /* ProcessCWD.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5425DF859E6EAA6252AFB703 /* ProcessCWD.swift */; };
 		8F3A7EBF180599046723BC9C /* TouchBarController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83980142316B07111FCBABD5 /* TouchBarController.swift */; };
+		99C340AD1616DE9C2BBDC8A4 /* GitStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD84DCD1FBA068D878BDC827 /* GitStatus.swift */; };
 		A6900FEA6291461B699C6FF5 /* TerminalParserTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A4550DA6F1C7C8146CABCCC /* TerminalParserTests.swift */; };
 		B4E8C86E144DD735D4F1DCE2 /* AnsiStripper.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5730B204C4726407D15C312 /* AnsiStripper.swift */; };
 		B4EEC0FEC45B26958B3C72B5 /* PTYBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53BE9563996BA6128255953D /* PTYBridge.swift */; };
+		D5673926FA7CBE8F3DA26E2A /* GitStatusTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B3C796C5D52ED8ADA6CF1DD /* GitStatusTests.swift */; };
 		D6D577A8795403E5B3FB22CF /* CommandHistory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2568E62C339551F482C4DD80 /* CommandHistory.swift */; };
 		DF8FB48B9E6920F66632FA75 /* docs in Resources */ = {isa = PBXBuildFile; fileRef = 03738BE7CB3AF3D97028E75C /* docs */; };
 		E1CD9751193214DD70F49F01 /* TerminalParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57EC57C433641DF940C692A5 /* TerminalParser.swift */; };
@@ -45,6 +47,7 @@
 		2568E62C339551F482C4DD80 /* CommandHistory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommandHistory.swift; sourceTree = "<group>"; };
 		25AA11759DFEDB6938588F43 /* PathCompleterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PathCompleterTests.swift; sourceTree = "<group>"; };
 		2737A5BF399D957F14C3C900 /* KeyboardInterceptor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardInterceptor.swift; sourceTree = "<group>"; };
+		3B3C796C5D52ED8ADA6CF1DD /* GitStatusTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GitStatusTests.swift; sourceTree = "<group>"; };
 		4A3F25F25A1D30CBD98A2063 /* GlobalHotKey.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlobalHotKey.swift; sourceTree = "<group>"; };
 		53BE9563996BA6128255953D /* PTYBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PTYBridge.swift; sourceTree = "<group>"; };
 		5425DF859E6EAA6252AFB703 /* ProcessCWD.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProcessCWD.swift; sourceTree = "<group>"; };
@@ -63,6 +66,7 @@
 		C83FF82291171789B78E016A /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		D295647E4D3C71946400AA19 /* CommandHistoryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommandHistoryTests.swift; sourceTree = "<group>"; };
 		DE7B0F79C6CCFD0EBE628A07 /* StatusItemController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusItemController.swift; sourceTree = "<group>"; };
+		FD84DCD1FBA068D878BDC827 /* GitStatus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GitStatus.swift; sourceTree = "<group>"; };
 		FE8973F0A7820B62FBE4E9D8 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -90,6 +94,7 @@
 			children = (
 				A5730B204C4726407D15C312 /* AnsiStripper.swift */,
 				2568E62C339551F482C4DD80 /* CommandHistory.swift */,
+				FD84DCD1FBA068D878BDC827 /* GitStatus.swift */,
 				1EFCD2E1DA437584E3588E29 /* PathCompleter.swift */,
 				57EC57C433641DF940C692A5 /* TerminalParser.swift */,
 				954484C56F6CA65A043E3AA8 /* TerminalSession.swift */,
@@ -133,6 +138,7 @@
 			children = (
 				C3B2B54D2ECBBAA010062FE2 /* AnsiStripperTests.swift */,
 				D295647E4D3C71946400AA19 /* CommandHistoryTests.swift */,
+				3B3C796C5D52ED8ADA6CF1DD /* GitStatusTests.swift */,
 				25AA11759DFEDB6938588F43 /* PathCompleterTests.swift */,
 				6E176490AFBEF8AFB9CC6B81 /* ProcessCWDTests.swift */,
 				6A4550DA6F1C7C8146CABCCC /* TerminalParserTests.swift */,
@@ -257,6 +263,7 @@
 				7B3E90DCB962394098CF9677 /* AppConfig.swift in Sources */,
 				E5F58EF589F2544B091571F7 /* AppDelegate.swift in Sources */,
 				D6D577A8795403E5B3FB22CF /* CommandHistory.swift in Sources */,
+				99C340AD1616DE9C2BBDC8A4 /* GitStatus.swift in Sources */,
 				4BD061C420CD1299DE0E6211 /* GlobalHotKey.swift in Sources */,
 				028CE4C8D425F69AC1A19C78 /* KeyboardInterceptor.swift in Sources */,
 				B4EEC0FEC45B26958B3C72B5 /* PTYBridge.swift in Sources */,
@@ -276,6 +283,7 @@
 			files = (
 				78F7E70FBD2309757BB9D563 /* AnsiStripperTests.swift in Sources */,
 				5960F58A49FFDA121DAB1EB4 /* CommandHistoryTests.swift in Sources */,
+				D5673926FA7CBE8F3DA26E2A /* GitStatusTests.swift in Sources */,
 				037E96850AF68D1F7BCCBF4D /* PathCompleterTests.swift in Sources */,
 				4D28DC063F26C3F136696B70 /* ProcessCWDTests.swift in Sources */,
 				A6900FEA6291461B699C6FF5 /* TerminalParserTests.swift in Sources */,
