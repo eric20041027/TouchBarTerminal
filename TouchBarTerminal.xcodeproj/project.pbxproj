@@ -21,6 +21,7 @@
 		8F3A7EBF180599046723BC9C /* TouchBarController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83980142316B07111FCBABD5 /* TouchBarController.swift */; };
 		99C340AD1616DE9C2BBDC8A4 /* GitStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD84DCD1FBA068D878BDC827 /* GitStatus.swift */; };
 		A6900FEA6291461B699C6FF5 /* TerminalParserTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A4550DA6F1C7C8146CABCCC /* TerminalParserTests.swift */; };
+		AE944AEBC0A2644D7CB5AED8 /* RunCommandTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B963504F9803A6422DAE3561 /* RunCommandTests.swift */; };
 		B4E8C86E144DD735D4F1DCE2 /* AnsiStripper.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5730B204C4726407D15C312 /* AnsiStripper.swift */; };
 		B4EEC0FEC45B26958B3C72B5 /* PTYBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53BE9563996BA6128255953D /* PTYBridge.swift */; };
 		D5673926FA7CBE8F3DA26E2A /* GitStatusTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B3C796C5D52ED8ADA6CF1DD /* GitStatusTests.swift */; };
@@ -61,6 +62,7 @@
 		954484C56F6CA65A043E3AA8 /* TerminalSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalSession.swift; sourceTree = "<group>"; };
 		99B2C72A8AEC06E77F6BA026 /* TouchBarTerminal.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = TouchBarTerminal.entitlements; sourceTree = "<group>"; };
 		A5730B204C4726407D15C312 /* AnsiStripper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnsiStripper.swift; sourceTree = "<group>"; };
+		B963504F9803A6422DAE3561 /* RunCommandTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RunCommandTests.swift; sourceTree = "<group>"; };
 		C3B2B54D2ECBBAA010062FE2 /* AnsiStripperTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnsiStripperTests.swift; sourceTree = "<group>"; };
 		C531BC171780BF8C5AE56627 /* TouchBarTerminal.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TouchBarTerminal.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		C83FF82291171789B78E016A /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -141,6 +143,7 @@
 				3B3C796C5D52ED8ADA6CF1DD /* GitStatusTests.swift */,
 				25AA11759DFEDB6938588F43 /* PathCompleterTests.swift */,
 				6E176490AFBEF8AFB9CC6B81 /* ProcessCWDTests.swift */,
+				B963504F9803A6422DAE3561 /* RunCommandTests.swift */,
 				6A4550DA6F1C7C8146CABCCC /* TerminalParserTests.swift */,
 			);
 			path = TouchBarTerminalTests;
@@ -286,6 +289,7 @@
 				D5673926FA7CBE8F3DA26E2A /* GitStatusTests.swift in Sources */,
 				037E96850AF68D1F7BCCBF4D /* PathCompleterTests.swift in Sources */,
 				4D28DC063F26C3F136696B70 /* ProcessCWDTests.swift in Sources */,
+				AE944AEBC0A2644D7CB5AED8 /* RunCommandTests.swift in Sources */,
 				A6900FEA6291461B699C6FF5 /* TerminalParserTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
