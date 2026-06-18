@@ -18,6 +18,10 @@ final class TouchBarController: NSObject {
     private let outputLine1 = NSTextField(labelWithString: "")
     private let outputLine2 = NSTextField(labelWithString: "")
 
+    // git 按鈕區（在 repo 內才顯示）
+    private let branchLabel = NSTextField(labelWithString: "")
+    private lazy var gitStack = makeGitStack()
+
     init(session: TerminalSession, fontSize: Double = 11) {
         self.session = session
         self.fontSize = fontSize
@@ -26,11 +30,38 @@ final class TouchBarController: NSObject {
         bindSession()
     }
 
-    func makeTouchBar() -> NSTouchBar {
+    private lazy var touchBar: NSTouchBar = {
         let bar = NSTouchBar()
         bar.delegate = self
         bar.defaultItemIdentifiers = [.terminalOutput]
         return bar
+    }()
+
+    func makeTouchBar() -> NSTouchBar { touchBar }
+
+    /// 以 system modal 呈現，佔滿整條 Touch Bar（蓋掉系統 Control Strip）。
+    /// 按全域熱鍵取得焦點時呼叫。
+    ///
+    /// `presentSystemModalTouchBar` 是 NSTouchBar 的 private 方法（DFR），
+    /// Swift 看不到，用 Objective-C runtime 動態呼叫。
+    func presentFullWidth() {
+        // 隱藏系統 Control Strip（DFR 函式，dlopen 取得）
+        DFR.setControlStripPresence(false)
+        let cls: AnyObject = NSTouchBar.self
+        let sel = NSSelectorFromString("presentSystemModalTouchBar:systemTrayItemIdentifier:")
+        if cls.responds(to: sel) {
+            _ = cls.perform(sel, with: touchBar, with: nil)
+        }
+    }
+
+    /// 收起 system modal Touch Bar，把畫面還給系統。
+    func dismiss() {
+        let cls: AnyObject = NSTouchBar.self
+        let sel = NSSelectorFromString("dismissSystemModalTouchBar:")
+        if cls.responds(to: sel) {
+            _ = cls.perform(sel, with: touchBar)
+        }
+        DFR.setControlStripPresence(true)   // 恢復系統 Control Strip
     }
 
     // MARK: - Setup
@@ -58,7 +89,7 @@ final class TouchBarController: NSObject {
         leftStack.spacing = 2
         leftStack.alignment = .leading
         leftStack.distribution = .fillEqually
-        leftStack.widthAnchor.constraint(equalToConstant: 280).isActive = true
+        leftStack.widthAnchor.constraint(equalToConstant: 300).isActive = true
 
         // 右欄（垂直）
         let rightStack = NSStackView(views: [outputLine1, outputLine2])
@@ -66,15 +97,55 @@ final class TouchBarController: NSObject {
         rightStack.spacing = 2
         rightStack.alignment = .leading
         rightStack.distribution = .fillEqually
-        rightStack.widthAnchor.constraint(equalToConstant: 360).isActive = true
+        rightStack.widthAnchor.constraint(lessThanOrEqualToConstant: 420).isActive = true
+        rightStack.setContentHuggingPriority(.defaultLow, for: .horizontal)
 
-        // 外層（水平，左右並排）
-        let hStack = NSStackView(views: [leftStack, rightStack])
+        // 外層（水平：左欄 | 右輸出 | git 按鈕區）
+        let hStack = NSStackView(views: [leftStack, rightStack, gitStack])
         hStack.orientation = .horizontal
         hStack.spacing = 12
         hStack.alignment = .centerY
 
+        gitStack.isHidden = true   // 預設隱藏，進 repo 才顯示
+
         outputItem.view = hStack
+    }
+
+    /// 建立 git 按鈕區：分支名 + status / add / commit / push
+    private func makeGitStack() -> NSStackView {
+        branchLabel.font = NSFont(name: "SFMono-Regular", size: fontSize)
+                        ?? NSFont.monospacedSystemFont(ofSize: fontSize, weight: .regular)
+        branchLabel.textColor = .systemOrange
+        branchLabel.backgroundColor = .clear
+        branchLabel.isBordered = false
+        branchLabel.isEditable = false
+        branchLabel.lineBreakMode = .byClipping
+        branchLabel.setContentCompressionResistancePriority(.required, for: .horizontal)
+
+        let buttons = [
+            gitButton("status", command: "git status -sb"),
+            gitButton("add",    command: "git add -A"),
+            gitButton("commit", command: "git commit"),
+            gitButton("push",   command: "git push"),
+        ]
+
+        let stack = NSStackView(views: [branchLabel] + buttons)
+        stack.orientation = .horizontal
+        stack.spacing = 4
+        stack.alignment = .centerY
+        return stack
+    }
+
+    private func gitButton(_ title: String, command: String) -> NSButton {
+        let button = NSButton(title: title, target: self, action: #selector(gitButtonTapped(_:)))
+        button.bezelStyle = .rounded
+        button.identifier = NSUserInterfaceItemIdentifier(command)   // 把指令藏在 identifier
+        return button
+    }
+
+    @objc private func gitButtonTapped(_ sender: NSButton) {
+        guard let command = sender.identifier?.rawValue else { return }
+        session?.runCommand(command)
     }
 
     private func bindSession() {
@@ -102,6 +173,20 @@ final class TouchBarController: NSObject {
             .sink { [weak self] lines in
                 self?.outputLine1.stringValue = lines.count > 0 ? lines[0] : ""
                 self?.outputLine2.stringValue = lines.count > 1 ? lines[1] : ""
+            }
+            .store(in: &cancellables)
+
+        // git 按鈕區：在 repo 內才顯示，並更新分支名
+        session.$gitBranch
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] branch in
+                guard let self else { return }
+                if let branch {
+                    self.branchLabel.stringValue = " \(branch)"
+                    self.gitStack.isHidden = false
+                } else {
+                    self.gitStack.isHidden = true
+                }
             }
             .store(in: &cancellables)
     }

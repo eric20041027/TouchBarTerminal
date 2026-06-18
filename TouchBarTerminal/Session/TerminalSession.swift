@@ -23,6 +23,8 @@ final class TerminalSession: ObservableObject {
     @Published var outputLines: [String] = []
     /// menu bar 連線狀態
     @Published var isConnected: Bool = false
+    /// 目前所在 git repo 的分支名；非 repo 時為 nil（UI 用來決定是否顯示 git 按鈕）
+    @Published var gitBranch: String? = nil
 
     private var ptyBridge = PTYBridge()
     private var parser = TerminalParser()
@@ -156,6 +158,20 @@ final class TerminalSession: ObservableObject {
         }
     }
 
+    /// git 按鈕用：直接執行一條指令（不動使用者正在打的 buffer）
+    func runCommand(_ command: String) {
+        guard !inPasswordMode else { return }
+        ptyBridge.writeData(Data([0x15]))           // ⌃U 清掉 zsh 行殘留
+        ptyBridge.writeString(command + "\n")
+    }
+
+    /// 用 zsh 子行程真實 cwd 更新 git 分支狀態
+    private func updateGitBranch() {
+        let cwd = ptyBridge.currentDirectory
+            ?? (currentPath as NSString).expandingTildeInPath
+        gitBranch = GitStatus.detect(at: cwd).branch
+    }
+
     func sendControl(_ byte: UInt8) {
         ptyBridge.writeData(Data([byte]))
         if byte == 0x03 {   // ⌃C：清空輸入
@@ -177,6 +193,7 @@ final class TerminalSession: ObservableObject {
         switch event {
         case .prompt(let path):
             currentPath = path
+            updateGitBranch()
         case .output(let line):
             outputLines.append(line)
             while outputLines.count > config.outputLines { outputLines.removeFirst() }

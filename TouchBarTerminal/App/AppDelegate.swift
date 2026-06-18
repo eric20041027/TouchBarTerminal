@@ -64,11 +64,13 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     
     private func toggleFocus() {
         if NSApp.isActive {
-            // 已經是前景 → 把焦點還給上一個 App
+            // 已經是前景 → 收起全寬 Touch Bar，焦點還給上一個 App
+            touchBarController?.dismiss()
             NSApp.hide(nil)
         } else {
-            // 不是前景 → 取得焦點，Touch Bar 變終端
+            // 不是前景 → 取得焦點 + 全寬呈現 Touch Bar（蓋掉 Control Strip）
             NSApp.activate(ignoringOtherApps: true)
+            touchBarController?.presentFullWidth()
         }
     }
 }

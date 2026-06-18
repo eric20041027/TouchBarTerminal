@@ -10,6 +10,7 @@
 		028CE4C8D425F69AC1A19C78 /* KeyboardInterceptor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2737A5BF399D957F14C3C900 /* KeyboardInterceptor.swift */; };
 		037E96850AF68D1F7BCCBF4D /* PathCompleterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 25AA11759DFEDB6938588F43 /* PathCompleterTests.swift */; };
 		23210B1FD78DD29DFEE68476 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE8973F0A7820B62FBE4E9D8 /* main.swift */; };
+		355084BFBEB7698E62A0AE93 /* DFR.swift in Sources */ = {isa = PBXBuildFile; fileRef = 344DB9DF8BFDF9731257A68B /* DFR.swift */; };
 		41DFD13C7066EDF84DC0CA65 /* StatusItemController.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE7B0F79C6CCFD0EBE628A07 /* StatusItemController.swift */; };
 		4BD061C420CD1299DE0E6211 /* GlobalHotKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A3F25F25A1D30CBD98A2063 /* GlobalHotKey.swift */; };
 		4D28DC063F26C3F136696B70 /* ProcessCWDTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E176490AFBEF8AFB9CC6B81 /* ProcessCWDTests.swift */; };
@@ -47,6 +48,7 @@
 		2568E62C339551F482C4DD80 /* CommandHistory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommandHistory.swift; sourceTree = "<group>"; };
 		25AA11759DFEDB6938588F43 /* PathCompleterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PathCompleterTests.swift; sourceTree = "<group>"; };
 		2737A5BF399D957F14C3C900 /* KeyboardInterceptor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardInterceptor.swift; sourceTree = "<group>"; };
+		344DB9DF8BFDF9731257A68B /* DFR.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DFR.swift; sourceTree = "<group>"; };
 		3B3C796C5D52ED8ADA6CF1DD /* GitStatusTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GitStatusTests.swift; sourceTree = "<group>"; };
 		4A3F25F25A1D30CBD98A2063 /* GlobalHotKey.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlobalHotKey.swift; sourceTree = "<group>"; };
 		53BE9563996BA6128255953D /* PTYBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PTYBridge.swift; sourceTree = "<group>"; };
@@ -127,6 +129,7 @@
 		8A03102AB6739330607A848F /* UI */ = {
 			isa = PBXGroup;
 			children = (
+				344DB9DF8BFDF9731257A68B /* DFR.swift */,
 				DE7B0F79C6CCFD0EBE628A07 /* StatusItemController.swift */,
 				83980142316B07111FCBABD5 /* TouchBarController.swift */,
 			);
@@ -263,6 +266,7 @@
 				7B3E90DCB962394098CF9677 /* AppConfig.swift in Sources */,
 				E5F58EF589F2544B091571F7 /* AppDelegate.swift in Sources */,
 				D6D577A8795403E5B3FB22CF /* CommandHistory.swift in Sources */,
+				355084BFBEB7698E62A0AE93 /* DFR.swift in Sources */,
 				99C340AD1616DE9C2BBDC8A4 /* GitStatus.swift in Sources */,
 				4BD061C420CD1299DE0E6211 /* GlobalHotKey.swift in Sources */,
 				028CE4C8D425F69AC1A19C78 /* KeyboardInterceptor.swift in Sources */,
