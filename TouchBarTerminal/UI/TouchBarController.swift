@@ -219,6 +219,8 @@ final class TouchBarController: NSObject {
         let showGit = (panelMode == .git && isInRepo)
         gitStack.isHidden = !showGit
         rightStack.isHidden = showGit
+        // git 模式時收起番茄鐘，把空間讓給四個 git 按鈕（倒數照常在背景跑）
+        pomodoroStack.isHidden = showGit
     }
 
     /// 建立 git 按鈕區：分支名 + status / add / commit / push。
