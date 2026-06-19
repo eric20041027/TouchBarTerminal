@@ -54,16 +54,27 @@
 
 ## 測試狀態
 
-- 37 個測試全綠（GitStatus 7 + RunCommand 3 + GitPanelMode 4 + 其餘 23）。
-- UI 顯示/隱藏/模式切換靠真機驗證（GitPanelMode 狀態機有單元測試）。
+- 41 個測試全綠（GitStatus 7 + RunCommand 3 + GitPanelMode 4 + CommitCommand 4 + 其餘 23）。
+- UI 顯示/模式切換/commit 流程靠真機驗證（狀態機與指令組裝有單元測試）。
 - 跑測試：
   `xcodebuild test -project TouchBarTerminal.xcodeproj -scheme TouchBarTerminal -destination 'platform=macOS'`
 
+## 塊 5：commit message 輸入模式（已 push）
+
+intent 的「待決定」已定案：**選 (a) 切回輸入框打訊息**。
+
+- 點 commit 按鈕 → 進入 commit 訊息模式：左側暫時變訊息輸入框（重用 inputBuffer，
+  打字/Backspace/游標都可用，prompt 顯示 `commit ▸`）。
+- Enter → 訊息非空 → 跑 `git commit -m "<訊息>"`、回正常模式、右側顯示結果；
+  空訊息 = 取消。⌃C 也可取消（訊息只在本地 buffer，沒送 zsh）。
+- `commitCommand(message:)` 純函式組裝並跳脫指令（先反斜線再雙引號、修空白），
+  4 個單元測試。commit 模式下停用指令歷史（避免蓋掉訊息）。
+
 ## 待決定 / 下一塊
 
-- commit message 輸入方式（intent 的「待決定」）：目前 `git commit` 不帶 `-m`，
-  會在 zsh 開編輯器；之後可評估切回輸入框打訊息。
 - ANSI 顏色、GUI diff、合併衝突：見 intent 的 out of scope。
+- `TerminalParser` 的 `[%$#]` heuristic 偏貪（status 已繞過 `-sb`），要更豐富 git
+  輸出時再硬化。
 
 ## 環境
 

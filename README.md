@@ -121,7 +121,7 @@ PTYBridge  →  TerminalParser  →  TerminalSession  →  TouchBarController
 | Phase 4 | 指令歷史、Ctrl+C、Tab | ✅ 完成 |
 | Phase 5 | 全域熱鍵、焦點切換（提前） | ✅ 完成 |
 | Phase 6 | 收尾、游標動畫、設定檔、sudo 密碼 | ✅ 完成 |
-| v1.1 | Touch Bar git 快捷按鈕（⎇ 切換輸出/git 模式，status/add/commit/push） | ✅ 完成 |
+| v1.1 | Touch Bar git 快捷按鈕（⎇ 切換輸出/git 模式，status/add/commit/push；commit 可在左側打訊息） | ✅ 完成 |
 
 ## 學習講義
 
