@@ -39,6 +39,12 @@ final class TerminalSession: ObservableObject {
     private var inPasswordMode = false
     private var passwordDigits = 0
 
+    /// commit message 輸入模式：commit 按鈕觸發，左側暫時當訊息輸入框。
+    /// UI 不需直接讀，狀態切回由 onCommitModeChanged 通知（給 controller 切版面）。
+    private var inCommitMode = false
+    /// 進入/離開 commit 模式時通知（true=進入，false=離開）。controller 用來切回輸出。
+    var onCommitModeChanged: ((Bool) -> Void)?
+
     // 游標閃爍
     private var cursorTimer: Timer?
     private var cursorVisible = true
@@ -107,14 +113,15 @@ final class TerminalSession: ObservableObject {
     }
 
     func historyUp() {
-        guard !inPasswordMode, let cmd = history.previous() else { return }
+        // commit 模式不叫指令歷史（會覆蓋正在打的 commit 訊息）
+        guard !inPasswordMode, !inCommitMode, let cmd = history.previous() else { return }
         inputBuffer = cmd
         cursorPos = cmd.count
         renderInputLine()
     }
 
     func historyDown() {
-        guard !inPasswordMode else { return }
+        guard !inPasswordMode, !inCommitMode else { return }
         inputBuffer = history.next() ?? ""
         cursorPos = inputBuffer.count
         renderInputLine()
@@ -125,6 +132,10 @@ final class TerminalSession: ObservableObject {
             ptyBridge.writeData(Data([0x0d]))
             passwordDigits = 0
             currentLine = "🔒 ..."
+            return
+        }
+        if inCommitMode {
+            submitCommitMessage()
             return
         }
         let cmd = inputBuffer
@@ -167,10 +178,50 @@ final class TerminalSession: ObservableObject {
         Data([0x15]) + Data((command + "\n").utf8)
     }
 
+    /// commit 按鈕用：把使用者打的訊息組成 `git commit -m "..."`。
+    /// 先跳脫反斜線、再跳脫雙引號（順序不能反，否則 \" 會被二次處理），
+    /// 並修掉前後空白，避免送出純空白訊息。
+    nonisolated static func commitCommand(message: String) -> String {
+        let escaped = message
+            .trimmingCharacters(in: .whitespaces)
+            .replacingOccurrences(of: #"\"#, with: #"\\"#)
+            .replacingOccurrences(of: #"""#, with: #"\""#)
+        return #"git commit -m "\#(escaped)""#
+    }
+
     /// git 按鈕用：直接執行一條指令（不動使用者正在打的 buffer）。
     func runCommand(_ command: String) {
         guard !inPasswordMode else { return }
         ptyBridge.writeData(Self.commandBytes(for: command))
+    }
+
+    /// commit 按鈕用：進入 commit message 輸入模式。
+    /// 左側暫時變成訊息輸入框，重用 inputBuffer 的打字/游標/Backspace。
+    func enterCommitMode() {
+        guard !inPasswordMode, !inCommitMode else { return }
+        inCommitMode = true
+        inputBuffer = ""
+        cursorPos = 0
+        renderInputLine()
+        onCommitModeChanged?(true)
+    }
+
+    /// commit 模式按 Enter：訊息非空 → 執行 git commit -m；空 → 視同取消。
+    private func submitCommitMessage() {
+        let message = inputBuffer.trimmingCharacters(in: .whitespaces)
+        if !message.isEmpty {
+            ptyBridge.writeData(Self.commandBytes(for: Self.commitCommand(message: message)))
+        }
+        exitCommitMode()
+    }
+
+    /// 離開 commit 模式，回到正常輸入（清空臨時訊息）。
+    private func exitCommitMode() {
+        inCommitMode = false
+        inputBuffer = ""
+        cursorPos = 0
+        renderInputLine()
+        onCommitModeChanged?(false)
     }
 
     /// 用 zsh 子行程的真實 cwd 更新 git 分支狀態（非 repo → nil）。
@@ -181,6 +232,11 @@ final class TerminalSession: ObservableObject {
     }
 
     func sendControl(_ byte: UInt8) {
+        // commit 模式下 ⌃C：取消 commit（訊息只在本地 buffer，不需送 zsh）
+        if inCommitMode, byte == 0x03 {
+            exitCommitMode()
+            return
+        }
         ptyBridge.writeData(Data([byte]))
         if byte == 0x03 {   // ⌃C：清空輸入
             inputBuffer = ""
@@ -243,7 +299,9 @@ final class TerminalSession: ObservableObject {
         let cursorChar = "|"
         var shown = inputBuffer
         shown.insert(contentsOf: cursorChar, at: bufferIndex(cursorPos))
-        currentLine = "% " + shown
+        // commit 模式用不同 prompt 提示使用者正在打 commit 訊息
+        let prompt = inCommitMode ? "commit ▸ " : "% "
+        currentLine = prompt + shown
     }
 
     private func bufferIndex(_ offset: Int) -> String.Index {

@@ -135,7 +135,7 @@ final class TouchBarController: NSObject {
         let buttons = [
             gitButton("status", command: "git status"),
             gitButton("add",    command: "git add -A"),
-            gitButton("commit", command: "git commit"),
+            gitButton("commit", command: Self.commitSentinel),  // 特例：進 commit 訊息模式
             gitButton("push",   command: "git push"),
         ]
 
@@ -155,8 +155,17 @@ final class TouchBarController: NSObject {
         return button
     }
 
+    /// commit 按鈕的特例識別字：不是直接跑指令，而是進 commit 訊息輸入模式。
+    private static let commitSentinel = "__enter_commit_mode__"
+
     @objc private func gitButtonTapped(_ sender: NSButton) {
         guard let command = sender.identifier?.rawValue else { return }
+        if command == Self.commitSentinel {
+            // 進 commit 訊息模式：切回輸出（左側顯示訊息輸入框），由 onCommitModeChanged 處理收尾
+            panelMode = .output
+            session?.enterCommitMode()
+            return
+        }
         session?.runCommand(command)
         // 跑完指令自動切回輸出，方便立刻看到結果
         panelMode = .output
@@ -164,6 +173,11 @@ final class TouchBarController: NSObject {
 
     private func bindSession() {
         guard let session else { return }
+
+        // commit 訊息模式進/出：都維持輸出模式（左側顯示訊息框 / 結果）
+        session.onCommitModeChanged = { [weak self] _ in
+            self?.panelMode = .output
+        }
 
         // 左側路徑
         session.$currentPath
