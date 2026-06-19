@@ -18,9 +18,18 @@ final class TouchBarController: NSObject {
     private let outputLine1 = NSTextField(labelWithString: "")
     private let outputLine2 = NSTextField(labelWithString: "")
 
-    // git 按鈕區（在 repo 內才顯示）
+    // git 按鈕區（git 模式時才顯示，與輸出互斥）
     private let branchLabel = NSTextField(labelWithString: "")
     private lazy var gitStack = makeGitStack()
+    private lazy var rightStack = makeRightStack()
+
+    // 左上 git 圖示鈕：在 repo 內出現，點擊切換輸出 / git 模式
+    private lazy var gitToggleButton = makeGitToggleButton()
+
+    // 右側顯示模式（輸出 / git 按鈕區互斥）
+    private var panelMode: GitPanelMode = .output { didSet { applyPanelMode() } }
+    // 目前是否在 git repo 內（控制 toggle 鈕是否出現）
+    private var isInRepo = false
 
     init(session: TerminalSession, fontSize: Double = 11) {
         self.session = session
@@ -56,7 +65,7 @@ final class TouchBarController: NSObject {
         outputLine1.textColor = .systemGreen
         outputLine2.textColor = .systemGreen
 
-        // 左欄（垂直）
+        // 左欄（垂直）：路徑 + 輸入，固定寬度，永遠顯示
         let leftStack = NSStackView(views: [pathLabel, inputLabel])
         leftStack.orientation = .vertical
         leftStack.spacing = 2
@@ -65,26 +74,51 @@ final class TouchBarController: NSObject {
         leftStack.widthAnchor.constraint(equalToConstant: 240).isActive = true
         leftStack.setContentHuggingPriority(.required, for: .horizontal)
 
-        // 右欄（垂直）：可壓縮，把空間讓給 git 按鈕區
-        let rightStack = NSStackView(views: [outputLine1, outputLine2])
-        rightStack.orientation = .vertical
-        rightStack.spacing = 2
-        rightStack.alignment = .leading
-        rightStack.distribution = .fillEqually
-        rightStack.widthAnchor.constraint(lessThanOrEqualToConstant: 360).isActive = true
-        rightStack.setContentHuggingPriority(.defaultLow, for: .horizontal)
-        rightStack.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
-
-        // 外層（水平：左欄 | 右輸出 | git 按鈕區）
-        let hStack = NSStackView(views: [leftStack, rightStack, gitStack])
+        // 外層（水平：左欄 | git 圖示鈕 | 右側區）。
+        // 右側區的輸出與 git 按鈕互斥（applyPanelMode 控制），所以不會互相擠壓。
+        let hStack = NSStackView(views: [leftStack, gitToggleButton, rightStack, gitStack])
         hStack.orientation = .horizontal
-        hStack.spacing = 12
+        hStack.spacing = 10
         hStack.alignment = .centerY
 
-        // 預設隱藏，進 repo 才顯示（共存模式：與系統 Control Strip 並存）
-        gitStack.isHidden = true
-
+        // 初始狀態：非 repo → 不顯示 toggle，顯示輸出
         outputItem.view = hStack
+        applyPanelMode()
+    }
+
+    /// 右欄（垂直）：終端輸出兩行。
+    private func makeRightStack() -> NSStackView {
+        let stack = NSStackView(views: [outputLine1, outputLine2])
+        stack.orientation = .vertical
+        stack.spacing = 2
+        stack.alignment = .leading
+        stack.distribution = .fillEqually
+        stack.widthAnchor.constraint(lessThanOrEqualToConstant: 400).isActive = true
+        return stack
+    }
+
+    /// 左上 git 圖示鈕：點擊切換輸出 / git 模式。
+    private func makeGitToggleButton() -> NSButton {
+        let image = NSImage(systemSymbolName: "arrow.triangle.branch",
+                            accessibilityDescription: "Git") ?? NSImage()
+        let button = NSButton(image: image, target: self, action: #selector(gitToggleTapped))
+        button.bezelStyle = .rounded
+        button.imagePosition = .imageOnly
+        button.setContentHuggingPriority(.required, for: .horizontal)
+        return button
+    }
+
+    @objc private func gitToggleTapped() {
+        panelMode = panelMode.toggled()
+    }
+
+    /// 套用目前模式到 UI：輸出與 git 按鈕區互斥顯示。
+    private func applyPanelMode() {
+        gitToggleButton.isHidden = !isInRepo
+        // git 模式（且在 repo）→ 顯示 git 按鈕區；否則顯示輸出
+        let showGit = (panelMode == .git && isInRepo)
+        gitStack.isHidden = !showGit
+        rightStack.isHidden = showGit
     }
 
     /// 建立 git 按鈕區：分支名 + status / add / commit / push。
@@ -99,7 +133,7 @@ final class TouchBarController: NSObject {
         branchLabel.setContentCompressionResistancePriority(.required, for: .horizontal)
 
         let buttons = [
-            gitButton("status", command: "git status -sb"),
+            gitButton("status", command: "git status"),
             gitButton("add",    command: "git add -A"),
             gitButton("commit", command: "git commit"),
             gitButton("push",   command: "git push"),
@@ -124,6 +158,8 @@ final class TouchBarController: NSObject {
     @objc private func gitButtonTapped(_ sender: NSButton) {
         guard let command = sender.identifier?.rawValue else { return }
         session?.runCommand(command)
+        // 跑完指令自動切回輸出，方便立刻看到結果
+        panelMode = .output
     }
 
     private func bindSession() {
@@ -154,17 +190,19 @@ final class TouchBarController: NSObject {
             }
             .store(in: &cancellables)
 
-        // git 按鈕區：在 repo 內才顯示，並更新分支名
+        // git 狀態：更新分支名 + repo 內外切換（離開 repo 強制回輸出模式）
         session.$gitBranch
             .receive(on: DispatchQueue.main)
             .sink { [weak self] branch in
                 guard let self else { return }
+                self.isInRepo = (branch != nil)
                 if let branch {
                     self.branchLabel.stringValue = " \(branch)"
-                    self.gitStack.isHidden = false
-                } else {
-                    self.gitStack.isHidden = true
                 }
+                // 離開 repo 時把模式拉回 output（state machine 決定）
+                self.panelMode = self.panelMode.afterRepoChange(isRepo: self.isInRepo)
+                // 仍在 repo 但模式沒變時 didSet 不會觸發，這裡補一次套用
+                self.applyPanelMode()
             }
             .store(in: &cancellables)
     }
