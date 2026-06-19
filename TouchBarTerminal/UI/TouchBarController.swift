@@ -1,5 +1,6 @@
 import AppKit
 import Combine
+import UserNotifications
 
 @MainActor
 final class TouchBarController: NSObject {
@@ -25,6 +26,12 @@ final class TouchBarController: NSObject {
 
     // 左上 git 圖示鈕：在 repo 內出現，點擊切換輸出 / git 模式
     private lazy var gitToggleButton = makeGitToggleButton()
+
+    // 番茄鐘（最左側常駐）：▶/⏸ 鈕 + 剩餘時間 + 進度光帶
+    private let pomodoroLabel = NSTextField(labelWithString: "")
+    private let pomodoroBar = NSProgressIndicator()
+    private lazy var pomodoroButton = makePomodoroButton()
+    private lazy var pomodoroStack = makePomodoroStack()
 
     // 右側顯示模式（輸出 / git 按鈕區互斥）
     private var panelMode: GitPanelMode = .output { didSet { applyPanelMode() } }
@@ -71,12 +78,12 @@ final class TouchBarController: NSObject {
         leftStack.spacing = 2
         leftStack.alignment = .leading
         leftStack.distribution = .fillEqually
-        leftStack.widthAnchor.constraint(equalToConstant: 240).isActive = true
+        leftStack.widthAnchor.constraint(equalToConstant: 200).isActive = true
         leftStack.setContentHuggingPriority(.required, for: .horizontal)
 
-        // 外層（水平：左欄 | git 圖示鈕 | 右側區）。
-        // 右側區的輸出與 git 按鈕互斥（applyPanelMode 控制），所以不會互相擠壓。
-        let hStack = NSStackView(views: [leftStack, gitToggleButton, rightStack, gitStack])
+        // 外層（水平：番茄鐘 | 左欄 | git 圖示鈕 | 右側區）。
+        // 番茄鐘最左側常駐（會動、永遠可見）；右側區的輸出與 git 按鈕互斥。
+        let hStack = NSStackView(views: [pomodoroStack, leftStack, gitToggleButton, rightStack, gitStack])
         hStack.orientation = .horizontal
         hStack.spacing = 10
         hStack.alignment = .centerY
@@ -110,6 +117,99 @@ final class TouchBarController: NSObject {
 
     @objc private func gitToggleTapped() {
         panelMode = panelMode.toggled()
+    }
+
+    // MARK: - 番茄鐘 UI
+
+    /// ▶/⏸ 按鈕。
+    private func makePomodoroButton() -> NSButton {
+        let image = NSImage(systemSymbolName: "play.fill", accessibilityDescription: "Start")
+            ?? NSImage()
+        let button = NSButton(image: image, target: self, action: #selector(pomodoroTapped))
+        button.bezelStyle = .rounded
+        button.imagePosition = .imageOnly
+        button.setContentHuggingPriority(.required, for: .horizontal)
+        return button
+    }
+
+    @objc private func pomodoroTapped() {
+        session?.togglePomodoro()
+    }
+
+    /// 到點：Touch Bar 紅字 + 閃爍幾下，並發系統通知（有聲音，專注時沒看也聽得到）。
+    private func handlePomodoroFinished() {
+        updatePomodoroUI(text: "00:00", progress: 1, running: false, finished: true)
+        flashPomodoro(times: 6)
+
+        let content = UNMutableNotificationContent()
+        content.title = "🍅 番茄鐘結束"
+        content.body = "25 分鐘到了，休息一下。"
+        content.sound = .default
+        let request = UNNotificationRequest(identifier: "pomodoro.finished",
+                                            content: content, trigger: nil)
+        let center = UNUserNotificationCenter.current()
+        center.requestAuthorization(options: [.alert, .sound]) { granted, _ in
+            guard granted else { return }
+            center.add(request)
+        }
+    }
+
+    /// Touch Bar 番茄鐘標籤閃爍（紅 ↔ 透明）。
+    private func flashPomodoro(times: Int) {
+        guard times > 0 else {
+            pomodoroLabel.textColor = .secondaryLabelColor   // 閃完回 idle 灰
+            return
+        }
+        pomodoroLabel.textColor = (times % 2 == 0) ? .systemRed : .clear
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
+            self?.flashPomodoro(times: times - 1)
+        }
+    }
+
+    /// 番茄鐘區：▶/⏸ 鈕 + 剩餘時間 + 進度光帶（垂直疊時間與光帶）。
+    private func makePomodoroStack() -> NSStackView {
+        pomodoroLabel.font = NSFont.monospacedDigitSystemFont(ofSize: fontSize, weight: .medium)
+        pomodoroLabel.textColor = .systemRed
+        pomodoroLabel.backgroundColor = .clear
+        pomodoroLabel.isBordered = false
+        pomodoroLabel.isEditable = false
+        pomodoroLabel.alignment = .center
+
+        pomodoroBar.isIndeterminate = false
+        pomodoroBar.minValue = 0
+        pomodoroBar.maxValue = 1
+        pomodoroBar.doubleValue = 0
+        pomodoroBar.controlSize = .small
+        pomodoroBar.widthAnchor.constraint(equalToConstant: 56).isActive = true
+
+        let textAndBar = NSStackView(views: [pomodoroLabel, pomodoroBar])
+        textAndBar.orientation = .vertical
+        textAndBar.spacing = 2
+        textAndBar.alignment = .centerX
+
+        let stack = NSStackView(views: [pomodoroButton, textAndBar])
+        stack.orientation = .horizontal
+        stack.spacing = 4
+        stack.alignment = .centerY
+        stack.setContentHuggingPriority(.required, for: .horizontal)
+        stack.setContentCompressionResistancePriority(.required, for: .horizontal)
+        return stack
+    }
+
+    /// 更新番茄鐘顯示（時間、進度、▶/⏸ 圖示、到點變色）。
+    private func updatePomodoroUI(text: String, progress: Double, running: Bool, finished: Bool) {
+        pomodoroLabel.stringValue = text
+        pomodoroBar.doubleValue = progress
+        let symbol = running ? "pause.fill" : "play.fill"
+        pomodoroButton.image = NSImage(systemSymbolName: symbol, accessibilityDescription: nil)
+        // 剩最後一分鐘或到點 → 紅；倒數中 → 橙；idle → 灰
+        if finished || (running && progress > 0 && (1 - progress) * Double(25 * 60) <= 60) {
+            pomodoroLabel.textColor = .systemRed
+        } else if running {
+            pomodoroLabel.textColor = .systemOrange
+        } else {
+            pomodoroLabel.textColor = .secondaryLabelColor
+        }
     }
 
     /// 套用目前模式到 UI：輸出與 git 按鈕區互斥顯示。
@@ -177,6 +277,21 @@ final class TouchBarController: NSObject {
         // commit 訊息模式進/出：都維持輸出模式（左側顯示訊息框 / 結果）
         session.onCommitModeChanged = { [weak self] _ in
             self?.panelMode = .output
+        }
+
+        // 番茄鐘顯示：時間 / 進度 / running 三者一起更新 UI
+        Publishers.CombineLatest3(
+            session.$pomodoroText, session.$pomodoroProgress, session.$pomodoroRunning
+        )
+        .receive(on: DispatchQueue.main)
+        .sink { [weak self] text, progress, running in
+            self?.updatePomodoroUI(text: text, progress: progress, running: running, finished: false)
+        }
+        .store(in: &cancellables)
+
+        // 番茄鐘到點：閃爍 + 系統通知
+        session.onPomodoroFinished = { [weak self] in
+            self?.handlePomodoroFinished()
         }
 
         // 左側路徑
