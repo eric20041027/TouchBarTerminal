@@ -30,6 +30,7 @@
 		D6D577A8795403E5B3FB22CF /* CommandHistory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2568E62C339551F482C4DD80 /* CommandHistory.swift */; };
 		DF8FB48B9E6920F66632FA75 /* docs in Resources */ = {isa = PBXBuildFile; fileRef = 03738BE7CB3AF3D97028E75C /* docs */; };
 		E1CD9751193214DD70F49F01 /* TerminalParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57EC57C433641DF940C692A5 /* TerminalParser.swift */; };
+		E4A5ABDC86D81A5AC35C90CB /* CommitCommandTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 937797123448EAFE7F565F60 /* CommitCommandTests.swift */; };
 		E5F58EF589F2544B091571F7 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = C83FF82291171789B78E016A /* AppDelegate.swift */; };
 		F235973025E712A66FC93AAB /* TerminalSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 954484C56F6CA65A043E3AA8 /* TerminalSession.swift */; };
 /* End PBXBuildFile section */
@@ -62,6 +63,7 @@
 		7F1166299CD1A128FA49CC03 /* TouchBarTerminalTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TouchBarTerminalTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		83980142316B07111FCBABD5 /* TouchBarController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TouchBarController.swift; sourceTree = "<group>"; };
 		93238C9A3F80932C038D5C8E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		937797123448EAFE7F565F60 /* CommitCommandTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommitCommandTests.swift; sourceTree = "<group>"; };
 		954484C56F6CA65A043E3AA8 /* TerminalSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalSession.swift; sourceTree = "<group>"; };
 		99B2C72A8AEC06E77F6BA026 /* TouchBarTerminal.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = TouchBarTerminal.entitlements; sourceTree = "<group>"; };
 		9A70DEE8D702BD700282057A /* GitPanelModeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GitPanelModeTests.swift; sourceTree = "<group>"; };
@@ -145,6 +147,7 @@
 			children = (
 				C3B2B54D2ECBBAA010062FE2 /* AnsiStripperTests.swift */,
 				D295647E4D3C71946400AA19 /* CommandHistoryTests.swift */,
+				937797123448EAFE7F565F60 /* CommitCommandTests.swift */,
 				9A70DEE8D702BD700282057A /* GitPanelModeTests.swift */,
 				3B3C796C5D52ED8ADA6CF1DD /* GitStatusTests.swift */,
 				25AA11759DFEDB6938588F43 /* PathCompleterTests.swift */,
@@ -293,6 +296,7 @@
 			files = (
 				78F7E70FBD2309757BB9D563 /* AnsiStripperTests.swift in Sources */,
 				5960F58A49FFDA121DAB1EB4 /* CommandHistoryTests.swift in Sources */,
+				E4A5ABDC86D81A5AC35C90CB /* CommitCommandTests.swift in Sources */,
 				18AF0511ED0B0D06B3253709 /* GitPanelModeTests.swift in Sources */,
 				D5673926FA7CBE8F3DA26E2A /* GitStatusTests.swift in Sources */,
 				037E96850AF68D1F7BCCBF4D /* PathCompleterTests.swift in Sources */,
