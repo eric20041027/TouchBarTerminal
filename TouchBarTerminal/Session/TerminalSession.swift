@@ -26,6 +26,14 @@ final class TerminalSession: ObservableObject {
     /// 目前所在 git repo 的分支名；非 repo 時為 nil（UI 用來決定是否顯示 git 按鈕）
     @Published var gitBranch: String? = nil
 
+    // MARK: 番茄鐘（給 Touch Bar 常駐顯示）
+    /// 倒數顯示字串（MM:SS）
+    @Published var pomodoroText: String = ""
+    /// 已過進度 0…1（UI 畫進度光帶）
+    @Published var pomodoroProgress: Double = 0
+    /// 是否正在倒數（UI 決定 ▶/⏸ 圖示）
+    @Published var pomodoroRunning: Bool = false
+
     private var ptyBridge = PTYBridge()
     private var parser = TerminalParser()
     private let config: AppConfig
@@ -49,6 +57,12 @@ final class TerminalSession: ObservableObject {
     private var cursorTimer: Timer?
     private var cursorVisible = true
 
+    // 番茄鐘
+    private var pomodoro = PomodoroTimer(durationSeconds: 25 * 60)
+    private var pomodoroTimer: Timer?
+    /// 番茄鐘到點時通知 controller（發系統通知 + Touch Bar 閃爍）
+    var onPomodoroFinished: (() -> Void)?
+
     init(config: AppConfig = .load()) {
         self.config = config
     }
@@ -64,11 +78,14 @@ final class TerminalSession: ObservableObject {
         isConnected = true
         startCursorBlink()
         renderInputLine()
+        publishPomodoro()        // Touch Bar 一開始就顯示 25:00
     }
 
     func stop() {
         cursorTimer?.invalidate()
         cursorTimer = nil
+        pomodoroTimer?.invalidate()
+        pomodoroTimer = nil
         ptyBridge.stop()
         isConnected = false
     }
@@ -229,6 +246,41 @@ final class TerminalSession: ObservableObject {
         let cwd = ptyBridge.currentDirectory
             ?? (currentPath as NSString).expandingTildeInPath
         gitBranch = GitStatus.detect(at: cwd).branch
+    }
+
+    // MARK: - 番茄鐘
+
+    /// ▶/⏸ 按鈕：idle → 開始倒數；running → 停止重置。
+    func togglePomodoro() {
+        if pomodoro.state == .running {
+            pomodoro.stop()
+            pomodoroTimer?.invalidate()
+            pomodoroTimer = nil
+        } else {
+            pomodoro.start()
+            pomodoroTimer?.invalidate()
+            pomodoroTimer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] _ in
+                Task { @MainActor in self?.pomodoroTick() }
+            }
+        }
+        publishPomodoro()
+    }
+
+    private func pomodoroTick() {
+        pomodoro.tick()
+        publishPomodoro()
+        if pomodoro.state == .finished {
+            pomodoroTimer?.invalidate()
+            pomodoroTimer = nil
+            onPomodoroFinished?()
+        }
+    }
+
+    /// 把 PomodoroTimer 的純狀態同步到 @Published（給 UI）。
+    private func publishPomodoro() {
+        pomodoroText = pomodoro.displayText
+        pomodoroProgress = pomodoro.progress
+        pomodoroRunning = (pomodoro.state == .running)
     }
 
     func sendControl(_ byte: UInt8) {
